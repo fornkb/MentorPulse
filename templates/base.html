@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MentorPulse — Skill-based mentor matching and progress tracking platform.">
+    <title>{% block title %}MentorPulse — Connect, Learn, Elevate{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom Design System -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="mp-navbar navbar navbar-expand-lg">
+        <div class="container">
+            <a class="mp-brand" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}">
+                <span class="mp-brand-logo">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </span>
+                <span class="mp-brand-text">MentorPulse</span>
+                <span class="mp-brand-badge">Phase 1</span>
+            </a>
+
+            <button class="navbar-toggler border-0 text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto ms-lg-4 mb-2 mb-lg-0">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
+                                <i class="bi bi-person-badge-fill me-1"></i> My Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muted" href="#" title="Coming in Phase 2" style="opacity: 0.6; cursor: not-allowed;">
+                                <i class="bi bi-compass me-1"></i> Discover <span class="badge bg-secondary" style="font-size: 0.6rem;">P2</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <div class="d-flex align-items-center gap-2">
+                    {% if user.is_authenticated %}
+                        <!-- Active Role Indicators -->
+                        <div class="d-none d-md-flex align-items-center gap-1 me-2">
+                            {% if user.profile.is_mentor %}
+                                <span class="mp-badge role-badge-mentor" title="Active Mentor Role">
+                                    <i class="bi bi-patch-check-fill"></i> Mentor
+                                </span>
+                            {% endif %}
+                            {% if user.profile.is_learner %}
+                                <span class="mp-badge role-badge-learner" title="Active Learner Role">
+                                    <i class="bi bi-book-fill"></i> Learner
+                                </span>
+                            {% endif %}
+                            {% if not user.profile.is_mentor and not user.profile.is_learner %}
+                                <span class="mp-badge role-badge-inactive">
+                                    <i class="bi bi-dash-circle"></i> No Active Role
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn p-0 border-0 d-flex align-items-center gap-2 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="mp-user-avatar">
+                                    {{ user.username|slice:":1"|upper }}
+                                </span>
+                                <span class="text-light fw-semibold small d-none d-sm-inline">
+                                    {{ user.username }}
+                                </span>
+                                <i class="bi bi-chevron-down text-muted small"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu">
+                                <li class="px-3 py-2 border-bottom border-secondary border-opacity-25">
+                                    <div class="fw-bold text-light">{{ user.get_full_name|default:user.username }}</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 180px;">{{ user.email|default:"No email set" }}</div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item mt-1" href="{% url 'profile' %}">
+                                        <i class="bi bi-person"></i> View Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'profile_edit' %}">
+                                        <i class="bi bi-sliders"></i> Edit Profile & Skills
+                                    </a>
+                                </li>
+                                {% if user.is_staff %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-warning" href="/admin/" target="_blank">
+                                        <i class="bi bi-shield-lock-fill"></i> Django Admin
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                                            <i class="bi bi-box-arrow-right"></i> Sign Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                        <a href="{% url 'register' %}" class="mp-btn mp-btn-primary mp-btn-sm">
+                            <i class="bi bi-person-plus-fill"></i> Create Account
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Global Messages Toast / Alert Container -->
+    <div class="container mt-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show fade-in shadow-sm" role="alert">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'danger' %}bi-exclamation-triangle-fill{% elif message.tags == 'warning' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %} fs-5"></i>
+                    <div class="flex-grow-1">{{ message }}</div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mp-footer">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center text-md-start">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-light">MentorPulse</span>
+                <span>— Skill-based Mentor Matching & Progress Tracking</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-dark border border-secondary text-secondary font-monospace" style="font-size: 0.72rem;">
+                    <i class="bi bi-hdd-network"></i> Local SQLite Build
+                </span>
+                <span class="small text-muted">&copy; 2026 MentorPulse</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

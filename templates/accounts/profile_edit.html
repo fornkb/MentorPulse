@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile & Skills — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-light mb-1">Profile & Skills Settings</h1>
+                    <p class="text-muted small mb-0">Configure your roles, expertise, availability, and learning goals</p>
+                </div>
+                <a href="{% url 'dashboard' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+
+            {% if profile_form.errors or user_form.errors or role_form.errors %}
+                <div class="alert alert-danger mb-4">
+                    <i class="bi bi-exclamation-octagon-fill me-2 fs-5"></i>
+                    <div>Please correct the errors in the form below before saving.</div>
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'profile_edit' %}">
+                {% csrf_token %}
+
+                <!-- Section 1: Role Assignments -->
+                <div class="mp-card mb-4">
+                    <div class="mp-card-header">
+                        <h2 class="mp-card-title">
+                            <i class="bi bi-diagram-3-fill text-primary"></i> Active Roles
+                        </h2>
+                        <span class="badge bg-secondary font-monospace" style="font-size: 0.7rem;">Dual-Role Enabled</span>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        On MentorPulse, you can be a Mentor, a Learner, or both at the same time. Select your active roles:
+                    </p>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="role-choice-card d-block h-100 {% if role_form.is_learner.value %}active{% endif %}" for="id_is_learner">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="mt-1">
+                                        {{ role_form.is_learner }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-light mb-1 d-flex align-items-center gap-2">
+                                            <i class="bi bi-book-half text-info"></i> Learner Role
+                                        </div>
+                                        <div class="text-muted small">
+                                            Allows you to search mentors, send mentorship requests, earn badges, and track your milestone progress.
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="role-choice-card d-block h-100 {% if role_form.is_mentor.value %}active{% endif %}" for="id_is_mentor">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="mt-1">
+                                        {{ role_form.is_mentor }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-light mb-1 d-flex align-items-center gap-2">
+                                            <i class="bi bi-patch-check-fill text-primary"></i> Mentor Role
+                                        </div>
+                                        <div class="text-muted small">
+                                            Lists your profile in mentor discovery, allows you to accept sessions, log meetings, and earn platform credits.
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    {% if role_form.non_field_errors %}
+                        <div class="text-danger small mt-2">
+                            {{ role_form.non_field_errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Section 2: Personal Information -->
+                <div class="mp-card mb-4">
+                    <div class="mp-card-header">
+                        <h2 class="mp-card-title">
+                            <i class="bi bi-person-badge text-info"></i> Account Details
+                        </h2>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label for="id_first_name" class="mp-form-label">First Name</label>
+                            {{ user_form.first_name }}
+                            {% if user_form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ user_form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="id_last_name" class="mp-form-label">Last Name</label>
+                            {{ user_form.last_name }}
+                            {% if user_form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ user_form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_email" class="mp-form-label">Email Address</label>
+                        {{ user_form.email }}
+                        {% if user_form.email.errors %}
+                            <div class="text-danger small mt-1">{{ user_form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Section 3: Profile & Experience -->
+                <div class="mp-card mb-4">
+                    <div class="mp-card-header">
+                        <h2 class="mp-card-title">
+                            <i class="bi bi-card-text text-warning"></i> Profile Information
+                        </h2>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label for="id_experience_level" class="mp-form-label">
+                                <i class="bi bi-bar-chart-fill me-1 text-primary"></i> Experience Level
+                            </label>
+                            {{ profile_form.experience_level }}
+                            <div class="mp-form-help">Your overall industry or academic experience tier.</div>
+                            {% if profile_form.experience_level.errors %}
+                                <div class="text-danger small mt-1">{{ profile_form.experience_level.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="id_availability" class="mp-form-label">
+                                <i class="bi bi-calendar-event me-1 text-primary"></i> Availability
+                            </label>
+                            {{ profile_form.availability }}
+                            <div class="mp-form-help">When you are generally available for sessions or chats.</div>
+                            {% if profile_form.availability.errors %}
+                                <div class="text-danger small mt-1">{{ profile_form.availability.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_bio" class="mp-form-label">
+                            <i class="bi bi-chat-square-quote me-1 text-primary"></i> Bio / Introduction
+                        </label>
+                        {{ profile_form.bio }}
+                        <div class="mp-form-help">Tell peers about your background, career path, or interests.</div>
+                        {% if profile_form.bio.errors %}
+                            <div class="text-danger small mt-1">{{ profile_form.bio.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="id_goals" class="mp-form-label">
+                            <i class="bi bi-bullseye me-1 text-primary"></i> Learning & Mentoring Goals
+                        </label>
+                        {{ profile_form.goals }}
+                        <div class="mp-form-help">What specific skills or milestones are you targeting?</div>
+                        {% if profile_form.goals.errors %}
+                            <div class="text-danger small mt-1">{{ profile_form.goals.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Section 4: Skills Selection -->
+                <div class="mp-card mb-4">
+                    <div class="mp-card-header">
+                        <div>
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-cpu text-cyan"></i> Skills Portfolio
+                            </h2>
+                            <p class="text-muted small mb-0 mt-1">Select the skills you want to learn, mentor, or showcase on your profile.</p>
+                        </div>
+                    </div>
+
+                    {% if skills_by_category %}
+                        {% for category, cat_skills in skills_by_category.items %}
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom border-secondary border-opacity-25">
+                                    <i class="bi bi-folder-fill text-primary small"></i>
+                                    <span class="text-uppercase small fw-bold text-light font-monospace">{{ category }}</span>
+                                </div>
+                                <div class="row g-2">
+                                    {% for skill in cat_skills %}
+                                        <div class="col-6 col-sm-4 col-md-3">
+                                            <label class="d-flex align-items-center gap-2 p-2 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-25 w-100" style="cursor: pointer; font-size: 0.85rem;" for="skill_check_{{ skill.id }}">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="skills" 
+                                                    value="{{ skill.id }}" 
+                                                    id="skill_check_{{ skill.id }}"
+                                                    class="form-check-input mt-0"
+                                                    {% if skill.id in current_skill_ids %}checked{% endif %}
+                                                >
+                                                <span class="text-light">{{ skill.name }}</span>
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            No skills currently exist in the database. Run the demo seeder or add skills in Django Admin.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="d-flex align-items-center justify-content-end gap-3 pb-5">
+                    <a href="{% url 'dashboard' %}" class="mp-btn mp-btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="mp-btn mp-btn-primary px-4">
+                        <i class="bi bi-check2-circle"></i> Save All Changes
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

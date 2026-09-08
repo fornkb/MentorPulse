@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Hero Profile Header Card -->
+    <div class="mp-card mp-card-glass mb-4 p-4 border-primary border-opacity-25">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="mp-user-avatar shadow" style="width: 64px; height: 64px; font-size: 1.75rem;">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h1 class="h3 fw-bold text-light mb-0">
+                            {{ user.get_full_name|default:user.username }}
+                        </h1>
+                        <span class="badge bg-secondary font-monospace" style="font-size: 0.75rem;">@{{ user.username }}</span>
+                        
+                        <!-- Role Badges -->
+                        {% for role in active_roles %}
+                            {% if role == 'Mentor' %}
+                                <span class="mp-badge role-badge-mentor">
+                                    <i class="bi bi-patch-check-fill"></i> Mentor
+                                </span>
+                            {% elif role == 'Learner' %}
+                                <span class="mp-badge role-badge-learner">
+                                    <i class="bi bi-book-fill"></i> Learner
+                                </span>
+                            {% endif %}
+                        {% empty %}
+                            <span class="mp-badge role-badge-inactive">
+                                <i class="bi bi-dash-circle"></i> No Active Role
+                            </span>
+                        {% endfor %}
+                    </div>
+                    
+                    <p class="text-muted mb-0 small" style="max-width: 650px;">
+                        {% if profile.bio %}
+                            {{ profile.bio }}
+                        {% else %}
+                            <span class="fst-italic text-secondary">No bio set yet. Click "Edit Profile" below to add a personal intro.</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <a href="{% url 'profile_edit' %}" class="mp-btn mp-btn-primary mp-btn-sm">
+                    <i class="bi bi-sliders"></i> Edit Profile & Skills
+                </a>
+                <a href="{% url 'profile' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-eye"></i> View Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="mp-stat-card">
+                <div class="mp-stat-icon mp-stat-icon-indigo">
+                    <i class="bi bi-award-fill"></i>
+                </div>
+                <div>
+                    <div class="mp-stat-value">{{ skills.count }}</div>
+                    <div class="mp-stat-label">Skills Tracked</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="mp-stat-card">
+                <div class="mp-stat-icon mp-stat-icon-cyan">
+                    <i class="bi bi-bar-chart-steps"></i>
+                </div>
+                <div>
+                    <div class="mp-stat-value text-capitalize" style="font-size: 1.25rem;">
+                        <span class="mp-badge exp-badge-{{ profile.experience_level }}">
+                            {{ profile.experience_level }}
+                        </span>
+                    </div>
+                    <div class="mp-stat-label">Experience Level</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="mp-stat-card">
+                <div class="mp-stat-icon mp-stat-icon-emerald">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                    <div class="mp-stat-value" style="font-size: 1.25rem;">{{ profile.availability }}</div>
+                    <div class="mp-stat-label">Availability</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="mp-stat-card">
+                <div class="mp-stat-icon mp-stat-icon-amber">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                </div>
+                <div>
+                    <div class="mp-stat-value">{{ profile.skill_score|floatformat:1 }}</div>
+                    <div class="mp-stat-label">Skill Score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Left Column: Skills & Profile Objectives -->
+        <div class="col-12 col-lg-7">
+            <!-- Skills Card -->
+            <div class="mp-card mb-4">
+                <div class="mp-card-header">
+                    <h2 class="mp-card-title">
+                        <i class="bi bi-tags-fill text-primary"></i> My Skills Portfolio
+                    </h2>
+                    <a href="{% url 'profile_edit' %}" class="mp-btn mp-btn-secondary mp-btn-sm py-1 px-2">
+                        <i class="bi bi-plus-circle"></i> Manage
+                    </a>
+                </div>
+
+                {% if skills %}
+                    {% for category, cat_skills in skills_by_category.items %}
+                        <div class="mb-3">
+                            <div class="text-uppercase small fw-bold text-muted mb-2 font-monospace" style="font-size: 0.75rem;">
+                                <i class="bi bi-folder2 text-secondary me-1"></i> {{ category }}
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for s in cat_skills %}
+                                    <span class="mp-skill-tag selected">
+                                        <i class="bi bi-check-circle-fill text-primary small"></i>
+                                        {{ s.name }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-stars text-secondary fs-2 mb-2 d-block"></i>
+                        <p class="mb-2">No skills selected yet.</p>
+                        <a href="{% url 'profile_edit' %}" class="mp-btn mp-btn-primary mp-btn-sm">
+                            <i class="bi bi-plus-lg"></i> Add Your Skills Now
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Goals Card -->
+            <div class="mp-card">
+                <div class="mp-card-header">
+                    <h2 class="mp-card-title">
+                        <i class="bi bi-bullseye text-danger"></i> Learning & Mentoring Goals
+                    </h2>
+                </div>
+                <div>
+                    {% if profile.goals %}
+                        <p class="text-light mb-0" style="white-space: pre-line;">{{ profile.goals }}</p>
+                    {% else %}
+                        <p class="text-muted fst-italic mb-2">No goals defined yet.</p>
+                        <a href="{% url 'profile_edit' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                            <i class="bi bi-pencil-square"></i> Set Your Goals
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Role Perspectives & Actions -->
+        <div class="col-12 col-lg-5">
+            <!-- Role Perspective Overview -->
+            <div class="mp-card mb-4">
+                <div class="mp-card-header">
+                    <h2 class="mp-card-title">
+                        <i class="bi bi-toggles text-info"></i> Active Workspace Modes
+                    </h2>
+                    <a href="{% url 'profile_edit' %}" class="small text-decoration-none text-info">
+                        Switch Roles
+                    </a>
+                </div>
+
+                <div class="vstack gap-3">
+                    <!-- Learner Perspective -->
+                    <div class="p-3 rounded-3 border {% if is_learner %}border-info border-opacity-50 bg-info bg-opacity-10{% else %}border-secondary border-opacity-25 bg-dark opacity-50{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-bold text-light d-flex align-items-center gap-2">
+                                <i class="bi bi-book-half text-info"></i> Learner Mode
+                            </div>
+                            {% if is_learner %}
+                                <span class="badge bg-info text-dark fw-bold">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small mb-2">Search vetted mentors, request 1-on-1 mentorship sessions, and track learning milestones.</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm py-1 disabled" title="Available in Phase 2">
+                                <i class="bi bi-search"></i> Find Mentors <span class="badge bg-secondary" style="font-size: 0.6rem;">P2</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mentor Perspective -->
+                    <div class="p-3 rounded-3 border {% if is_mentor %}border-primary border-opacity-50 bg-primary bg-opacity-10{% else %}border-secondary border-opacity-25 bg-dark opacity-50{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-bold text-light d-flex align-items-center gap-2">
+                                <i class="bi bi-patch-check-fill text-primary"></i> Mentor Mode
+                            </div>
+                            {% if is_mentor %}
+                                <span class="badge bg-primary text-white fw-bold">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small mb-2">Accept mentorship requests, schedule sessions with meeting links, share notes, and earn credits.</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm py-1 disabled" title="Available in Phase 3">
+                                <i class="bi bi-calendar-check"></i> Manage Mentorships <span class="badge bg-secondary" style="font-size: 0.6rem;">P3</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role Assignment History -->
+            <div class="mp-card">
+                <div class="mp-card-header">
+                    <h2 class="mp-card-title">
+                        <i class="bi bi-clock-history text-secondary"></i> Role Activity History
+                    </h2>
+                </div>
+                <div class="vstack gap-2">
+                    {% for role_record in role_history %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-secondary border-opacity-25">
+                            <div>
+                                <span class="fw-semibold text-light">{{ role_record.role }}</span>
+                                <div class="text-muted" style="font-size: 0.75rem;">
+                                    Started: {{ role_record.start_time|date:"M d, Y" }}
+                                    {% if role_record.end_time %}
+                                        • Ended: {{ role_record.end_time|date:"M d, Y" }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div>
+                                {% if not role_record.end_time %}
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-25 text-muted border border-secondary border-opacity-25">Archived</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-muted small py-2">No history recorded yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

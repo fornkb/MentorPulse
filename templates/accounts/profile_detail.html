@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ target_user.get_full_name|default:target_user.username }}'s Profile — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+
+            <!-- Profile Header Card -->
+            <div class="mp-card mp-card-glass mb-4 p-4 p-md-5">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="mp-user-avatar shadow-lg" style="width: 80px; height: 80px; font-size: 2.2rem;">
+                            {{ target_user.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <h1 class="h2 fw-bold text-light mb-0">
+                                    {{ target_user.get_full_name|default:target_user.username }}
+                                </h1>
+                                <span class="badge bg-secondary font-monospace">@{{ target_user.username }}</span>
+                            </div>
+
+                            <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                                <!-- Role Badges -->
+                                {% if is_mentor %}
+                                    <span class="mp-badge role-badge-mentor">
+                                        <i class="bi bi-patch-check-fill"></i> Mentor
+                                    </span>
+                                {% endif %}
+                                {% if is_learner %}
+                                    <span class="mp-badge role-badge-learner">
+                                        <i class="bi bi-book-fill"></i> Learner
+                                    </span>
+                                {% endif %}
+
+                                <span class="mp-badge exp-badge-{{ profile.experience_level }}">
+                                    <i class="bi bi-bar-chart"></i> {{ profile.experience_level }}
+                                </span>
+
+                                <span class="mp-badge" style="background: rgba(255,255,255,0.06); color: #cbd5e1; border: 1px solid var(--border-subtle);">
+                                    <i class="bi bi-clock"></i> {{ profile.availability }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if is_own_profile %}
+                        <div>
+                            <a href="{% url 'profile_edit' %}" class="mp-btn mp-btn-primary">
+                                <i class="bi bi-pencil-square"></i> Edit Profile
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Profile Details Grid -->
+            <div class="row g-4">
+                <!-- Left Details -->
+                <div class="col-12 col-md-7">
+                    <!-- Bio -->
+                    <div class="mp-card mb-4">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-person-lines-fill text-primary"></i> About Me
+                            </h2>
+                        </div>
+                        <p class="text-light" style="line-height: 1.7; white-space: pre-line;">
+                            {% if profile.bio %}
+                                {{ profile.bio }}
+                            {% else %}
+                                <span class="text-muted fst-italic">No bio provided yet.</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Goals -->
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-flag-fill text-danger"></i> Objectives & Goals
+                            </h2>
+                        </div>
+                        <p class="text-light" style="line-height: 1.7; white-space: pre-line;">
+                            {% if profile.goals %}
+                                {{ profile.goals }}
+                            {% else %}
+                                <span class="text-muted fst-italic">No goals listed yet.</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Details: Skills & Availability -->
+                <div class="col-12 col-md-5">
+                    <!-- Skills Portfolio -->
+                    <div class="mp-card mb-4">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-cpu-fill text-cyan"></i> Skills
+                            </h2>
+                            <span class="badge bg-dark border border-secondary text-secondary">{{ skills.count }}</span>
+                        </div>
+
+                        {% if skills %}
+                            {% for category, cat_skills in skills_by_category.items %}
+                                <div class="mb-3">
+                                    <div class="text-muted small fw-semibold mb-2 font-monospace" style="font-size: 0.72rem;">
+                                        {{ category|upper }}
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for s in cat_skills %}
+                                            <span class="mp-skill-tag selected">
+                                                {{ s.name }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small mb-0">No skills attached to this profile.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Readiness & Meta -->
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-info-circle text-muted"></i> Profile Information
+                            </h2>
+                        </div>
+                        <ul class="list-unstyled mb-0 vstack gap-2 small text-muted">
+                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span>Member Since:</span>
+                                <span class="text-light fw-medium">{{ target_user.date_joined|date:"F Y" }}</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span>Skill Score:</span>
+                                <span class="text-light fw-medium">{{ profile.skill_score|floatformat:1 }}</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1">
+                                <span>Availability:</span>
+                                <span class="text-light fw-medium">{{ profile.availability }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
