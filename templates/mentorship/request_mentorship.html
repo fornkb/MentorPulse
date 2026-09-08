@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Mentorship with {{ mentor.get_full_name|default:mentor.username }} — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+
+            <!-- Back link -->
+            <div class="mb-3">
+                <a href="{% url 'mentor_detail' mentor.id %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Mentor Profile
+                </a>
+            </div>
+
+            <!-- Mentor Summary Header Card -->
+            <div class="mp-card mp-card-glass mb-4 p-4">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="mp-user-avatar shadow" style="width: 58px; height: 58px; font-size: 1.5rem;">
+                            {{ mentor.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <h2 class="h5 fw-bold text-light mb-1">
+                                Request Mentorship with {{ mentor.get_full_name|default:mentor.username }}
+                            </h2>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-secondary font-monospace" style="font-size: 0.72rem;">@{{ mentor.username }}</span>
+                                <span class="mp-badge exp-badge-{{ profile.experience_level }}" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;">
+                                    {{ profile.experience_level }} Tier
+                                </span>
+                                <span class="small text-muted">
+                                    <i class="bi bi-clock"></i> {{ profile.availability }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if match_data %}
+                        <div class="text-sm-end">
+                            <span class="badge px-3 py-2 bg-success bg-opacity-25 text-success border border-success border-opacity-50 fs-6">
+                                <i class="bi bi-stars"></i> {{ match_data.total_score }}% Match
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Request Form Card -->
+            <div class="mp-card p-4 p-md-5">
+                <div class="mp-card-header mb-4">
+                    <div>
+                        <h1 class="h4 fw-bold text-light mb-1">
+                            <i class="bi bi-send-plus-fill text-primary me-1"></i> Submit Mentorship Application
+                        </h1>
+                        <p class="text-muted small mb-0">Outline your objectives so the mentor can prepare your tailored roadmap</p>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'mentorship_request' mentor.id %}">
+                    {% csrf_token %}
+
+                    <!-- Goals Input -->
+                    <div class="mb-4">
+                        <label for="id_goals" class="mp-form-label">
+                            <i class="bi bi-bullseye text-danger me-1"></i> Mentorship Goals & Focus Areas <span class="text-danger">*</span>
+                        </label>
+                        {{ form.goals }}
+                        <div class="mp-form-help">
+                            Be specific about target milestones (e.g. mastering React hooks, preparing for system design interviews, reviewing architecture code).
+                        </div>
+                        {% if form.goals.errors %}
+                            <div class="text-danger small mt-1">{{ form.goals.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Priority Queue Option -->
+                    <div class="mb-4">
+                        <label class="role-choice-card d-block p-3 border-warning border-opacity-50" style="background: rgba(245, 158, 11, 0.05);" for="id_is_priority">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="mt-1">
+                                    {{ form.is_priority }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-warning mb-1 d-flex align-items-center gap-2">
+                                        <i class="bi bi-star-fill text-warning"></i> Fast-Track with Priority Placement
+                                    </div>
+                                    <div class="text-muted small">
+                                        Flags your request with a prominent gold highlight badge at the top of the mentor's inbox for faster review.
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex align-items-center justify-content-end gap-3 pt-2">
+                        <a href="{% url 'mentor_detail' mentor.id %}" class="mp-btn mp-btn-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="mp-btn mp-btn-primary px-4">
+                            <i class="bi bi-send-fill"></i> Send Request
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

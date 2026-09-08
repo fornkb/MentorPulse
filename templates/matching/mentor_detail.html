@@ -57,10 +57,12 @@
                                 <i class="bi bi-sliders"></i> Edit My Profile
                             </a>
                         {% else %}
-                            <button class="mp-btn mp-btn-primary px-4 py-2" title="Mentorship Requests flow activates in Phase 3" onclick="alert('Mentorship requests, credit checkout (-10 credits), and scheduling flow will activate in Phase 3!')">
+                            <a href="{% url 'mentorship_request' mentor.id %}" class="mp-btn mp-btn-primary px-4 py-2">
                                 <i class="bi bi-send-plus-fill"></i> Request Mentorship
-                            </button>
-                            <span class="badge bg-secondary font-monospace" style="font-size: 0.68rem;">Requests Open • Phase 3 Ready</span>
+                            </a>
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 font-monospace" style="font-size: 0.7rem;">
+                                <i class="bi bi-lightning-charge-fill"></i> Direct Request
+                            </span>
                         {% endif %}
                     </div>
                 </div>

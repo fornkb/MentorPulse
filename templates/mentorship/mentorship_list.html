@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}My Mentorships — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-light mb-1">
+                <i class="bi bi-chat-square-heart-fill text-primary me-2"></i> Mentorship Central
+            </h1>
+            <p class="text-muted small mb-0">Manage active collaborations, incoming requests, and completed milestones</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-primary mp-btn-sm">
+                <i class="bi bi-compass-fill"></i> Find New Mentors
+            </a>
+        </div>
+    </div>
+
+    <!-- Section 1: Incoming Mentorship Requests (For Mentors) -->
+    {% if incoming_requests %}
+        <div class="mb-5">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <h2 class="h5 fw-bold text-light mb-0">
+                    <i class="bi bi-inbox-fill text-warning me-1"></i> Incoming Requests Awaiting Your Review
+                </h2>
+                <span class="badge bg-warning text-dark fw-bold font-monospace">{{ incoming_requests.count }}</span>
+            </div>
+
+            <div class="row g-3">
+                {% for req in incoming_requests %}
+                    <div class="col-12 col-lg-6">
+                        <div class="mp-card h-100 {% if req.is_priority %}border-warning border-opacity-75{% endif %}" 
+                             style="{% if req.is_priority %}background: linear-gradient(135deg, rgba(23, 32, 51, 0.95) 0%, rgba(245, 158, 11, 0.08) 100%);{% endif %}">
+                            
+                            <!-- Priority Callout Badge -->
+                            {% if req.is_priority %}
+                                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-warning border-opacity-25">
+                                    <span class="badge bg-warning text-dark fw-bold d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-star-fill"></i> ⭐ Priority Request
+                                    </span>
+                                    <span class="small text-warning font-monospace">High Priority Queue</span>
+                                </div>
+                            {% endif %}
+
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <div class="mp-user-avatar" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                    {{ req.learner.username|slice:":1"|upper }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h3 class="h6 fw-bold text-light mb-1">
+                                        {{ req.learner.get_full_name|default:req.learner.username }}
+                                    </h3>
+                                    <div class="d-flex align-items-center gap-2 small text-muted">
+                                        <span class="badge bg-secondary font-monospace">@{{ req.learner.username }}</span>
+                                        <span class="mp-badge exp-badge-{{ req.learner.profile.experience_level }}" style="font-size: 0.68rem; padding: 0.1rem 0.45rem;">
+                                            {{ req.learner.profile.experience_level }}
+                                        </span>
+                                        <span>• {{ req.start_date|date:"M d, Y" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Proposed Goals -->
+                            <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 mb-4">
+                                <div class="small fw-semibold text-muted mb-1 font-monospace" style="font-size: 0.72rem;">LEARNING GOALS</div>
+                                <p class="text-light small mb-0" style="white-space: pre-line;">{{ req.goals }}</p>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex align-items-center justify-content-end gap-2 mt-auto">
+                                <a href="{% url 'mentorship_reject' req.id %}" class="mp-btn mp-btn-secondary mp-btn-sm py-1 px-3 text-danger border-danger border-opacity-25" 
+                                   onclick="return confirm('Are you sure you want to decline this mentorship request?');">
+                                    <i class="bi bi-x-circle"></i> Decline
+                                </a>
+                                <a href="{% url 'mentorship_accept' req.id %}" class="mp-btn mp-btn-primary mp-btn-sm py-1 px-3">
+                                    <i class="bi bi-check-circle-fill"></i> Accept & Open Workspace
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Section 2: Active Mentorships -->
+    <div class="mb-5">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <h2 class="h5 fw-bold text-light mb-0">
+                <i class="bi bi-lightning-charge-fill text-success me-1"></i> Active Mentorships
+            </h2>
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 font-monospace">
+                {{ active_mentorships.count }}
+            </span>
+        </div>
+
+        {% if active_mentorships %}
+            <div class="row g-4">
+                {% for m in active_mentorships %}
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <div class="mp-card h-100 d-flex flex-column justify-content-between">
+                            
+                            <div>
+                                <!-- Partner Header -->
+                                <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="mp-user-avatar" style="width: 44px; height: 44px; font-size: 1.15rem;">
+                                            {% if user == m.mentor %}
+                                                {{ m.learner.username|slice:":1"|upper }}
+                                            {% else %}
+                                                {{ m.mentor.username|slice:":1"|upper }}
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h3 class="h6 fw-bold text-light mb-0">
+                                                {% if user == m.mentor %}
+                                                    {{ m.learner.get_full_name|default:m.learner.username }}
+                                                {% else %}
+                                                    {{ m.mentor.get_full_name|default:m.mentor.username }}
+                                                {% endif %}
+                                            </h3>
+                                            <div class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                                {% if user == m.mentor %}
+                                                    Learner Partner
+                                                {% else %}
+                                                    Mentor Partner
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">
+                                        Active
+                                    </span>
+                                </div>
+
+                                <!-- Goals summary -->
+                                <p class="text-muted small mb-3" style="line-height: 1.5; min-height: 42px;">
+                                    {{ m.goals|truncatechars:100 }}
+                                </p>
+
+                                <!-- Progress Bar -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                                        <span class="text-muted font-monospace" style="font-size: 0.75rem;">PROGRESS</span>
+                                        <span class="text-primary fw-bold font-monospace">{{ m.progress.completion_pct|floatformat:0 }}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 7px; background-color: rgba(255,255,255,0.08);">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ m.progress.completion_pct }}%;" aria-valuenow="{{ m.progress.completion_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer CTA -->
+                            <div class="pt-3 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+                                <span class="small text-muted">
+                                    <i class="bi bi-calendar-event"></i> Started {{ m.start_date|date:"M d, Y" }}
+                                </span>
+                                <a href="{% url 'mentorship_workspace' m.id %}" class="mp-btn mp-btn-primary mp-btn-sm py-1 px-3">
+                                    <span>Workspace</span>
+                                    <i class="bi bi-arrow-right small"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="mp-card p-4 text-center text-muted">
+                <i class="bi bi-people text-secondary fs-2 mb-2 d-block"></i>
+                <p class="mb-2">You don't have any active mentorships right now.</p>
+                <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-primary mp-btn-sm">
+                    <i class="bi bi-search"></i> Browse Mentors
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Section 3: Outgoing Requests (For Learners) -->
+    {% if outgoing_requests %}
+        <div class="mb-5">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <h2 class="h5 fw-bold text-light mb-0">
+                    <i class="bi bi-clock-history text-info me-1"></i> Your Pending Requests
+                </h2>
+                <span class="badge bg-secondary font-monospace">{{ outgoing_requests.count }}</span>
+            </div>
+
+            <div class="row g-3">
+                {% for req in outgoing_requests %}
+                    <div class="col-12 col-md-6">
+                        <div class="mp-card p-3 d-flex flex-column justify-content-between">
+                            <div class="d-flex align-items-start justify-content-between mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="mp-user-avatar" style="width: 38px; height: 38px; font-size: 1rem;">
+                                        {{ req.mentor.username|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-light">{{ req.mentor.get_full_name|default:req.mentor.username }}</div>
+                                        <div class="small text-muted font-monospace" style="font-size: 0.72rem;">Mentor</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    {% if req.is_priority %}
+                                        <span class="badge bg-warning text-dark fw-bold">⭐ Priority</span>
+                                    {% endif %}
+                                    <span class="badge bg-secondary">Awaiting Review</span>
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-3">{{ req.goals|truncatechars:90 }}</p>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                                <span class="small text-muted">Sent {{ req.start_date|date:"M d, Y" }}</span>
+                                <a href="{% url 'mentorship_cancel' req.id %}" class="btn btn-sm btn-link text-danger text-decoration-none p-0" onclick="return confirm('Cancel this request?');">
+                                    Cancel Request
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Section 4: Completed Mentorships -->
+    {% if completed_mentorships %}
+        <div class="mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <h2 class="h5 fw-bold text-light mb-0">
+                    <i class="bi bi-patch-check-fill text-primary me-1"></i> Completed Mentorships & Credentials
+                </h2>
+                <span class="badge bg-secondary font-monospace">{{ completed_mentorships.count }}</span>
+            </div>
+
+            <div class="row g-3">
+                {% for m in completed_mentorships %}
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <div class="mp-card p-3 h-100 d-flex flex-column justify-content-between border-success border-opacity-50">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-light">
+                                        {% if user == m.mentor %}
+                                            Learner: {{ m.learner.get_full_name|default:m.learner.username }}
+                                        {% else %}
+                                            Mentor: {{ m.mentor.get_full_name|default:m.mentor.username }}
+                                        {% endif %}
+                                    </span>
+                                    <span class="badge bg-success bg-opacity-25 text-success">100% Done</span>
+                                </div>
+                                <p class="text-muted small mb-3">{{ m.goals|truncatechars:85 }}</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                                <span class="small text-muted">Finished {{ m.end_date|date:"M d, Y"|default:"Recently" }}</span>
+                                <a href="{% url 'mentorship_certificate' m.id %}" class="mp-btn mp-btn-outline mp-btn-sm py-1">
+                                    <i class="bi bi-award-fill text-warning"></i> View Certificate
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
