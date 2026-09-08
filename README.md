@@ -47,17 +47,25 @@ python manage.py migrate
 ### 4. Seed initial skills & demo accounts
 ```bash
 python manage.py seed_phase1
+```bash
+python manage.py seed_phase1
+python manage.py seed_phase2
 ```
-This populates 27 categorized skills and 3 demo user accounts:
-- **`alex_mentor`** / `DemoPass123!` (Mentor — Expert Backend)
-- **`sara_learner`** / `DemoPass123!` (Learner — Frontend & Design)
+This populates 27 categorized skills and diverse mentor/learner demo profiles:
+- **`david_frontend`** / `DemoPass123!` (Mentor — Advanced Frontend / React)
+- **`maya_design`** / `DemoPass123!` (Mentor — Expert Product Design / Figma)
+- **`priya_ai`** / `DemoPass123!` (Mentor — Expert AI & Deep Learning)
+- **`marcus_cloud`** / `DemoPass123!` (Mentor — Advanced DevOps / Cloud)
+- **`sarah_product`** / `DemoPass123!` (Mentor — Advanced Product & Career Coaching)
+- **`alex_mentor`** / `DemoPass123!` (Mentor — Expert Backend / Python)
+- **`sara_learner`** / `DemoPass123!` (Learner — React / Design)
 - **`charlie_dual`** / `DemoPass123!` (Dual-role — Mentor & Learner)
 
 ### 5. Run the development server
 ```bash
 python manage.py runserver
 ```
-Navigate to [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
+Navigate to [http://127.0.0.1:8000/](http://127.0.0.1:8000/) or explore mentors directly at [http://127.0.0.1:8000/mentors/](http://127.0.0.1:8000/mentors/).
 
 ---
 
@@ -65,7 +73,7 @@ Navigate to [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
 
 Execute the automated test suite with:
 ```bash
-python manage.py test accounts
+python manage.py test matching accounts
 ```
 
 ---
@@ -73,7 +81,8 @@ python manage.py test accounts
 ## 🗺️ Roadmap
 
 - [x] **Phase 1**: Foundation, Design System & User Accounts
-- [ ] **Phase 2**: Mentor Discovery, Filtering & Rule-Based Matching Engine
+- [x] **Phase 2**: Mentor Discovery, Filtering & Rule-Based Matching Engine
 - [ ] **Phase 3**: Mentorship Requests, Milestones, Sessions & Resources
 - [ ] **Phase 4**: Gamification, Credits, Badges & Leaderboards
 - [ ] **Phase 5**: Polish, Notifications, Demo Seeder & Certificate Generation
+
