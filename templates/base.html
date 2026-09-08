@@ -46,8 +46,14 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-muted" href="#" title="Coming in Phase 2" style="opacity: 0.6; cursor: not-allowed;">
-                                <i class="bi bi-compass me-1"></i> Discover <span class="badge bg-secondary" style="font-size: 0.6rem;">P2</span>
+                            <a class="nav-link {% if 'mentor' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'mentor_list' %}">
+                                <i class="bi bi-compass-fill me-1"></i> Find Mentors
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'mentor' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'mentor_list' %}">
+                                <i class="bi bi-compass-fill me-1"></i> Find Mentors
                             </a>
                         </li>
                     {% endif %}

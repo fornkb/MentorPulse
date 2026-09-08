@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explore Mentors — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Search Hero Header -->
+    <div class="mp-card mp-card-glass mb-4 p-4 p-md-5 text-center position-relative overflow-hidden">
+        <div class="position-relative" style="z-index: 2;">
+            <span class="mp-badge mb-3" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3);">
+                <i class="bi bi-cpu-fill"></i> Rule-Based Matching Engine
+            </span>
+            <h1 class="display-6 fw-bold text-light mb-2">Find Your Ideal Mentor</h1>
+            <p class="text-muted mx-auto mb-4" style="max-width: 620px; font-size: 1.05rem;">
+                Browse verified mentors across programming, design, and data science. 
+                {% if is_learner %}
+                    Mentors are automatically ranked by your <strong class="text-light">skill overlap, schedule compatibility, and experience gap</strong>.
+                {% else %}
+                    Sign in as a learner to see personalized match compatibility scores.
+                {% endif %}
+            </p>
+
+            <!-- Search Bar Form -->
+            <form method="get" action="{% url 'mentor_list' %}" class="row g-2 justify-content-center mx-auto" style="max-width: 700px;">
+                <div class="col-12 col-sm-8 col-md-9">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary border-opacity-50 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input 
+                            type="text" 
+                            name="q" 
+                            value="{{ selected_q }}" 
+                            class="form-control" 
+                            placeholder="Search by mentor name, skill, keyword, or bio..."
+                            aria-label="Search mentors"
+                        >
+                        {% if selected_q %}
+                            <a href="{% url 'mentor_list' %}" class="btn btn-outline-secondary border-secondary border-opacity-50 text-muted" type="button" title="Clear search">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-12 col-sm-4 col-md-3">
+                    <button type="submit" class="mp-btn mp-btn-primary w-100 py-2">
+                        <i class="bi bi-funnel-fill"></i> Search
+                    </button>
+                </div>
+
+                <!-- Hidden inputs to preserve dropdown filters during search submit -->
+                {% if selected_skill %}<input type="hidden" name="skill" value="{{ selected_skill }}">{% endif %}
+                {% if selected_experience %}<input type="hidden" name="experience" value="{{ selected_experience }}">{% endif %}
+                {% if selected_availability %}<input type="hidden" name="availability" value="{{ selected_availability }}">{% endif %}
+            </form>
+
+            <!-- Quick Skill Filter Tag Carousel -->
+            {% if popular_skills %}
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mt-4 pt-2">
+                    <span class="small text-muted me-1">Popular Skills:</span>
+                    {% for skill in popular_skills %}
+                        <a href="?skill={{ skill.name }}{% if selected_q %}&q={{ selected_q }}{% endif %}{% if selected_experience %}&experience={{ selected_experience }}{% endif %}{% if selected_availability %}&availability={{ selected_availability }}{% endif %}" 
+                           class="mp-skill-tag {% if selected_skill == skill.name %}selected{% endif %}" style="text-decoration: none;">
+                            {{ skill.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Bar Controls -->
+    <div class="mp-card mb-4 p-3">
+        <form method="get" action="{% url 'mentor_list' %}" class="row g-3 align-items-center">
+            {% if selected_q %}
+                <input type="hidden" name="q" value="{{ selected_q }}">
+            {% endif %}
+
+            <!-- Skill Filter Dropdown -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <label for="filter_skill" class="mp-form-label small mb-1">
+                    <i class="bi bi-tag text-primary me-1"></i> Skill Domain
+                </label>
+                <select name="skill" id="filter_skill" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Skills ({{ all_skills.count }})</option>
+                    {% for s in all_skills %}
+                        <option value="{{ s.name }}" {% if selected_skill == s.name %}selected{% endif %}>
+                            {{ s.name }} ({{ s.category }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Experience Level Dropdown -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <label for="filter_experience" class="mp-form-label small mb-1">
+                    <i class="bi bi-bar-chart text-cyan me-1"></i> Experience Tier
+                </label>
+                <select name="experience" id="filter_experience" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Experience Levels</option>
+                    {% for code, label in experience_choices %}
+                        <option value="{{ code }}" {% if selected_experience == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Availability Dropdown -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <label for="filter_availability" class="mp-form-label small mb-1">
+                    <i class="bi bi-calendar-check text-emerald me-1"></i> Availability
+                </label>
+                <select name="availability" id="filter_availability" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">Any Schedule</option>
+                    {% for code, label in availability_choices %}
+                        <option value="{{ code }}" {% if selected_availability == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Reset / Action Buttons -->
+            <div class="col-12 col-sm-6 col-md-3 d-flex align-items-end gap-2 pt-md-3">
+                <button type="submit" class="mp-btn mp-btn-secondary mp-btn-sm flex-grow-1">
+                    <i class="bi bi-filter"></i> Apply
+                </button>
+                {% if active_filter_count > 0 %}
+                    <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-sm mp-btn-outline" title="Reset all filters">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Results Header -->
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <h2 class="h5 fw-bold text-light mb-0">Active Mentors</h2>
+            <span class="badge bg-dark border border-secondary text-secondary font-monospace">{{ total_mentors_count }} available</span>
+        </div>
+
+        <div class="text-muted small">
+            {% if is_learner %}
+                <span class="text-info"><i class="bi bi-sort-down"></i> Ranked by Match Compatibility</span>
+            {% else %}
+                <span><i class="bi bi-sort-numeric-down"></i> Ranked by Skill Score</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mentor Cards Grid -->
+    {% if ranked_mentors %}
+        <div class="row g-4 mb-5">
+            {% for item in ranked_mentors %}
+                {% include 'matching/components/mentor_card.html' with item=item is_learner=is_learner %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="mp-card p-5 text-center my-4">
+            <div class="mp-brand-logo mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.75rem; background: rgba(255,255,255,0.05); color: #64748b; box-shadow: none;">
+                <i class="bi bi-search"></i>
+            </div>
+            <h3 class="h5 fw-bold text-light mb-2">No mentors found matching your filters</h3>
+            <p class="text-muted mx-auto mb-4" style="max-width: 480px;">
+                Try broadening your search criteria, clearing the skill tag, or searching for a different keyword.
+            </p>
+            <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-primary mp-btn-sm">
+                <i class="bi bi-arrow-counterclockwise"></i> Clear All Filters
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

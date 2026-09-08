@@ -1,0 +1,92 @@
+<div class="col-12 col-md-6 col-xl-4">
+    <div class="mp-card h-100 d-flex flex-column justify-content-between position-relative">
+        
+        <!-- Top Row: Avatar, Name & Match Score -->
+        <div>
+            <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="mp-user-avatar shadow-sm" style="width: 52px; height: 52px; font-size: 1.35rem;">
+                        {{ item.mentor.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h3 class="h5 fw-bold text-light mb-0">
+                            {{ item.mentor.get_full_name|default:item.mentor.username }}
+                        </h3>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge bg-secondary font-monospace" style="font-size: 0.7rem;">@{{ item.mentor.username }}</span>
+                            <span class="mp-badge exp-badge-{{ item.profile.experience_level }}" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;">
+                                {{ item.profile.experience_level }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Score Badge -->
+                {% if is_learner %}
+                    <div class="text-end">
+                        {% if item.score >= 80 %}
+                            <span class="mp-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.8rem; font-weight: 700;">
+                                <i class="bi bi-stars"></i> {{ item.score }}% Match
+                            </span>
+                        {% elif item.score >= 60 %}
+                            <span class="mp-badge" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4); font-size: 0.8rem; font-weight: 700;">
+                                <i class="bi bi-check2-circle"></i> {{ item.score }}% Match
+                            </span>
+                        {% else %}
+                            <span class="mp-badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25); font-size: 0.8rem;">
+                                {{ item.score }}% Match
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Bio snippet -->
+            <p class="text-muted small mb-3" style="line-height: 1.5; min-height: 42px;">
+                {% if item.profile.bio %}
+                    {{ item.profile.bio|truncatechars:110 }}
+                {% else %}
+                    <span class="fst-italic text-secondary">Expert mentor available for sessions.</span>
+                {% endif %}
+            </p>
+
+            <!-- Skills Showcase -->
+            <div class="mb-3">
+                <div class="d-flex flex-wrap gap-1">
+                    {% for skill in item.profile.skills.all|slice:":4" %}
+                        {% if skill in item.match.shared_skills %}
+                            <span class="mp-skill-tag selected" title="Skill matches your learning profile!">
+                                <i class="bi bi-check2 text-info"></i> {{ skill.name }}
+                            </span>
+                        {% else %}
+                            <span class="mp-skill-tag">
+                                {{ skill.name }}
+                            </span>
+                        {% endif %}
+                    {% empty %}
+                        <span class="text-muted small">No specific skills listed.</span>
+                    {% endfor %}
+                    {% if item.profile.skills.count > 4 %}
+                        <span class="mp-skill-tag" style="background: transparent; border-style: dashed;">
+                            +{{ item.profile.skills.count|add:"-4" }} more
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Footer: Availability & Action Button -->
+        <div class="pt-3 mt-2 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+            <div class="small text-muted d-flex align-items-center gap-1">
+                <i class="bi bi-clock-history text-secondary"></i>
+                <span>{{ item.profile.availability }}</span>
+            </div>
+
+            <a href="{% url 'mentor_detail' item.mentor.id %}" class="mp-btn mp-btn-outline mp-btn-sm py-1 px-3">
+                <span>View Profile</span>
+                <i class="bi bi-arrow-right small"></i>
+            </a>
+        </div>
+
+    </div>
+</div>

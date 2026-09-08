@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ mentor.get_full_name|default:mentor.username }} — Mentor Profile — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+
+            <!-- Back Navigation -->
+            <div class="mb-3">
+                <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Mentor Directory
+                </a>
+            </div>
+
+            <!-- Mentor Hero Header Card -->
+            <div class="mp-card mp-card-glass mb-4 p-4 p-md-5">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="mp-user-avatar shadow-lg" style="width: 84px; height: 84px; font-size: 2.25rem;">
+                            {{ mentor.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <h1 class="h2 fw-bold text-light mb-0">
+                                    {{ mentor.get_full_name|default:mentor.username }}
+                                </h1>
+                                <span class="badge bg-secondary font-monospace">@{{ mentor.username }}</span>
+
+                                {% if is_active_mentor %}
+                                    <span class="mp-badge role-badge-mentor">
+                                        <i class="bi bi-patch-check-fill"></i> Active Mentor
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                                <span class="mp-badge exp-badge-{{ profile.experience_level }}">
+                                    <i class="bi bi-bar-chart-fill"></i> {{ profile.experience_level }} Tier
+                                </span>
+                                <span class="mp-badge" style="background: rgba(255,255,255,0.06); color: #cbd5e1; border: 1px solid var(--border-subtle);">
+                                    <i class="bi bi-clock"></i> {{ profile.availability }}
+                                </span>
+                                <span class="mp-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                    <i class="bi bi-lightning-charge-fill"></i> Skill Score: {{ profile.skill_score|floatformat:1 }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Call to Action -->
+                    <div class="d-flex flex-column align-items-md-end gap-2">
+                        {% if is_own_profile %}
+                            <a href="{% url 'profile_edit' %}" class="mp-btn mp-btn-secondary">
+                                <i class="bi bi-sliders"></i> Edit My Profile
+                            </a>
+                        {% else %}
+                            <button class="mp-btn mp-btn-primary px-4 py-2" title="Mentorship Requests flow activates in Phase 3" onclick="alert('Mentorship requests, credit checkout (-10 credits), and scheduling flow will activate in Phase 3!')">
+                                <i class="bi bi-send-plus-fill"></i> Request Mentorship
+                            </button>
+                            <span class="badge bg-secondary font-monospace" style="font-size: 0.68rem;">Requests Open • Phase 3 Ready</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Compatibility Card (Only shown if viewer is authenticated learner) -->
+            {% if match_data %}
+                <div class="mp-card mb-4 border-primary border-opacity-50" style="background: linear-gradient(135deg, rgba(23, 32, 51, 0.9) 0%, rgba(99, 102, 241, 0.08) 100%);">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="mp-brand-logo" style="width: 32px; height: 32px; font-size: 1rem;">
+                                <i class="bi bi-cpu-fill"></i>
+                            </span>
+                            <div>
+                                <h2 class="h5 fw-bold text-light mb-0">Match Compatibility Analysis</h2>
+                                <p class="text-muted small mb-0">Algorithmic alignment based on your learner profile</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            {% if match_data.total_score >= 80 %}
+                                <span class="badge px-3 py-2 fs-6 bg-success bg-opacity-25 text-success border border-success border-opacity-50">
+                                    <i class="bi bi-stars"></i> {{ match_data.total_score }}% Match
+                                </span>
+                            {% elif match_data.total_score >= 60 %}
+                                <span class="badge px-3 py-2 fs-6 bg-info bg-opacity-25 text-info border border-info border-opacity-50">
+                                    <i class="bi bi-check-circle-fill"></i> {{ match_data.total_score }}% Match
+                                </span>
+                            {% else %}
+                                <span class="badge px-3 py-2 fs-6 bg-secondary bg-opacity-25 text-muted border border-secondary">
+                                    {{ match_data.total_score }}% Match
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Skill Overlap -->
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-semibold text-light">Skill Overlap (50%)</span>
+                                    <span class="small fw-bold text-primary">{{ match_data.skill_percentage }}%</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 6px; background-color: rgba(255,255,255,0.1);">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ match_data.skill_percentage }}%;" aria-valuenow="{{ match_data.skill_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="small text-muted" style="font-size: 0.78rem;">
+                                    {% if match_data.shared_skill_count > 0 %}
+                                        Shares {{ match_data.shared_skill_count }} of your tracked learning skills.
+                                    {% else %}
+                                        No overlapping skills detected.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Availability Compatibility -->
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-semibold text-light">Schedule Match (30%)</span>
+                                    <span class="small fw-bold text-cyan">{{ match_data.availability_percentage }}%</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 6px; background-color: rgba(255,255,255,0.1);">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ match_data.availability_percentage }}%;" aria-valuenow="{{ match_data.availability_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="small text-muted" style="font-size: 0.78rem;">
+                                    Mentor availability: <strong>{{ profile.availability }}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experience Affinity -->
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-semibold text-light">Experience Affinity (20%)</span>
+                                    <span class="small fw-bold text-amber">{{ match_data.experience_percentage }}%</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 6px; background-color: rgba(255,255,255,0.1);">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ match_data.experience_percentage }}%;" aria-valuenow="{{ match_data.experience_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="small text-muted" style="font-size: 0.78rem;">
+                                    Mentor tier: <strong>{{ profile.experience_level }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shared Skills list -->
+                    {% if shared_skills %}
+                        <div class="mt-3 pt-3 border-top border-secondary border-opacity-25 d-flex flex-wrap align-items-center gap-2">
+                            <span class="small text-muted">Overlapping skills you can learn from {{ mentor.first_name|default:mentor.username }}:</span>
+                            {% for skill in shared_skills %}
+                                <span class="mp-skill-tag selected">
+                                    <i class="bi bi-check-circle-fill text-primary small"></i> {{ skill.name }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Details Columns -->
+            <div class="row g-4">
+                <!-- Left Details -->
+                <div class="col-12 col-md-7">
+                    <!-- Bio -->
+                    <div class="mp-card mb-4">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-person-lines-fill text-primary"></i> About the Mentor
+                            </h2>
+                        </div>
+                        <p class="text-light" style="line-height: 1.7; white-space: pre-line;">
+                            {% if profile.bio %}
+                                {{ profile.bio }}
+                            {% else %}
+                                <span class="text-muted fst-italic">This mentor has not written a personal bio yet.</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Mentoring Objectives -->
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-compass text-info"></i> Mentoring Objectives & Focus
+                            </h2>
+                        </div>
+                        <p class="text-light" style="line-height: 1.7; white-space: pre-line;">
+                            {% if profile.goals %}
+                                {{ profile.goals }}
+                            {% else %}
+                                <span class="text-muted fst-italic">Available for 1-on-1 code reviews, architectural advice, and career coaching.</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Details -->
+                <div class="col-12 col-md-5">
+                    <!-- Skills Taught Portfolio -->
+                    <div class="mp-card mb-4">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-mortarboard text-cyan"></i> Skills Offered
+                            </h2>
+                            <span class="badge bg-dark border border-secondary text-secondary">{{ skills.count }}</span>
+                        </div>
+
+                        {% if skills %}
+                            {% for category, cat_skills in skills_by_category.items %}
+                                <div class="mb-3">
+                                    <div class="text-muted small fw-semibold mb-2 font-monospace" style="font-size: 0.72rem;">
+                                        {{ category|upper }}
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for s in cat_skills %}
+                                            {% if s in shared_skills %}
+                                                <span class="mp-skill-tag selected" title="Skill overlap!">
+                                                    <i class="bi bi-star-fill text-warning small"></i> {{ s.name }}
+                                                </span>
+                                            {% else %}
+                                                <span class="mp-skill-tag">
+                                                    {{ s.name }}
+                                                </span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small mb-0">No specific skills listed.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Availability & Scheduling Widget -->
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h2 class="mp-card-title">
+                                <i class="bi bi-calendar3 text-emerald"></i> Schedule & Availability
+                            </h2>
+                        </div>
+
+                        <div class="vstack gap-3 small">
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span class="text-muted">General Schedule:</span>
+                                <span class="text-light fw-medium">{{ profile.availability }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span class="text-muted">Response Time:</span>
+                                <span class="text-light fw-medium">Within 24 hours</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span class="text-muted">Session Medium:</span>
+                                <span class="text-light fw-medium">Online (Meet / Zoom)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
