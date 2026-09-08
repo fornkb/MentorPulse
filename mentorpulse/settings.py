@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'matching.apps.MatchingConfig',
     'mentorship.apps.MentorshipConfig',
+    'gamification.apps.GamificationConfig',
 ]
 
 MIDDLEWARE = [
