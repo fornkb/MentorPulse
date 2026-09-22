@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}Leaderboard — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="mp-badge mp-badge-primary">Community Rankings</span>
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 font-monospace">
+                    Formula: (Skill &times; 10) + (Credits &times; 0.5) + (Badges &times; 15)
+                </span>
+            </div>
+            <h1 class="h2 fw-bold text-light mb-1">Platform Leaderboard</h1>
+            <p class="text-muted mb-0">Recognizing top mentors, active learners, and collaborative achievers across MentorPulse.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'badges' %}" class="mp-btn mp-btn-secondary">
+                <i class="bi bi-award-fill"></i> View Badges
+            </a>
+            <a href="{% url 'wallet' %}" class="mp-btn mp-btn-primary">
+                <i class="bi bi-coin"></i> My Wallet
+            </a>
+        </div>
+    </div>
+
+    <!-- Current User Standing Highlight (if authenticated) -->
+    {% if user.is_authenticated and user_entry %}
+        <div class="mp-card p-3 mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3" style="background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%); border-color: rgba(99, 102, 241, 0.4);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="mp-podium-rank" style="background: var(--primary); color: #fff; width: 38px; height: 38px; font-size: 1rem;">
+                    #{{ user_entry.rank }}
+                </div>
+                <div>
+                    <div class="text-light fw-bold">Your Current Ranking</div>
+                    <div class="small text-muted">You are currently ranked #{{ user_entry.rank }} out of {{ entries|length }} participants with a score of <strong class="text-light">{{ user_entry.score }}</strong> pts.</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end d-none d-md-block">
+                    <span class="small text-muted d-block">Credits: <strong class="text-warning">{{ user.credit.balance|default:0 }}</strong></span>
+                    <span class="small text-muted d-block">Badges: <strong class="text-info">{{ user.user_badges.count }}</strong></span>
+                </div>
+                <a href="{% url 'profile' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-person"></i> View Profile
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Top 3 Podium (Only on default view without search query) -->
+    {% if podium_entries and not search_query %}
+        <div class="row g-4 mb-5 align-items-end justify-content-center">
+            <!-- 2nd Place -->
+            {% if podium_entries|length >= 2 %}
+                {% with second=podium_entries.1 %}
+                <div class="col-12 col-md-4 order-2 order-md-1">
+                    <div class="mp-podium-card mp-podium-2 p-4 text-center">
+                        <div class="mp-podium-rank mp-podium-rank-2 mb-3">2</div>
+                        <div class="mp-user-avatar mx-auto mb-2" style="width: 52px; height: 52px; font-size: 1.3rem;">
+                            {{ second.user.username|slice:":1"|upper }}
+                        </div>
+                        <h5 class="fw-bold text-light mb-1">{{ second.user.get_full_name|default:second.user.username }}</h5>
+                        <p class="small text-muted mb-3">@{{ second.user.username }}</p>
+                        
+                        <div class="badge bg-secondary bg-opacity-25 text-light mb-3 px-3 py-1 font-monospace">
+                            {{ second.score }} PTS
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3 small text-muted border-top border-secondary border-opacity-25 pt-3">
+                            <div><i class="bi bi-coin text-warning me-1"></i>{{ second.user.credit.balance|default:50 }} CR</div>
+                            <div><i class="bi bi-award text-info me-1"></i>{{ second.user.user_badges.count }} Badges</div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endif %}
+
+            <!-- 1st Place -->
+            {% if podium_entries|length >= 1 %}
+                {% with first=podium_entries.0 %}
+                <div class="col-12 col-md-4 order-1 order-md-2 mb-3 mb-md-0">
+                    <div class="mp-podium-card mp-podium-1 p-4 text-center" style="transform: scale(1.05); z-index: 2;">
+                        <div class="badge bg-warning text-dark fw-bold px-3 py-1 mb-2 text-uppercase" style="letter-spacing: 0.08em; font-size: 0.72rem;">
+                            <i class="bi bi-crown-fill me-1"></i> Champion
+                        </div>
+                        <div class="mp-podium-rank mp-podium-rank-1 mb-3">1</div>
+                        <div class="mp-user-avatar mx-auto mb-2" style="width: 60px; height: 60px; font-size: 1.5rem; border: 2px solid #fbbf24;">
+                            {{ first.user.username|slice:":1"|upper }}
+                        </div>
+                        <h4 class="fw-bold text-light mb-1">{{ first.user.get_full_name|default:first.user.username }}</h4>
+                        <p class="small text-muted mb-3">@{{ first.user.username }}</p>
+                        
+                        <div class="badge bg-warning bg-opacity-25 text-warning mb-3 px-3 py-1 fs-6 font-monospace">
+                            {{ first.score }} PTS
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3 small text-muted border-top border-warning border-opacity-25 pt-3">
+                            <div><i class="bi bi-coin text-warning me-1"></i>{{ first.user.credit.balance|default:50 }} CR</div>
+                            <div><i class="bi bi-award text-info me-1"></i>{{ first.user.user_badges.count }} Badges</div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endif %}
+
+            <!-- 3rd Place -->
+            {% if podium_entries|length >= 3 %}
+                {% with third=podium_entries.2 %}
+                <div class="col-12 col-md-4 order-3 order-md-3">
+                    <div class="mp-podium-card mp-podium-3 p-4 text-center">
+                        <div class="mp-podium-rank mp-podium-rank-3 mb-3">3</div>
+                        <div class="mp-user-avatar mx-auto mb-2" style="width: 52px; height: 52px; font-size: 1.3rem;">
+                            {{ third.user.username|slice:":1"|upper }}
+                        </div>
+                        <h5 class="fw-bold text-light mb-1">{{ third.user.get_full_name|default:third.user.username }}</h5>
+                        <p class="small text-muted mb-3">@{{ third.user.username }}</p>
+                        
+                        <div class="badge bg-secondary bg-opacity-25 text-light mb-3 px-3 py-1 font-monospace">
+                            {{ third.score }} PTS
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3 small text-muted border-top border-secondary border-opacity-25 pt-3">
+                            <div><i class="bi bi-coin text-warning me-1"></i>{{ third.user.credit.balance|default:50 }} CR</div>
+                            <div><i class="bi bi-award text-info me-1"></i>{{ third.user.user_badges.count }} Badges</div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Search & Filter Controls -->
+    <div class="mp-card p-3 mb-4">
+        <form method="get" class="d-flex gap-2">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-secondary border-opacity-25 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control mp-form-control border-start-0" placeholder="Search leaderboard by name or username...">
+            </div>
+            {% if search_query %}
+                <a href="{% url 'leaderboard' %}" class="mp-btn mp-btn-secondary">
+                    <i class="bi bi-x-circle"></i> Clear
+                </a>
+            {% endif %}
+            <button type="submit" class="mp-btn mp-btn-primary">
+                Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Complete Ranked Standings Table -->
+    <div class="mp-card overflow-hidden">
+        <div class="p-4 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-light mb-0">
+                <i class="bi bi-list-ol me-2 text-primary"></i> Standings
+            </h5>
+            <span class="badge bg-secondary bg-opacity-25 text-light font-monospace">
+                {{ entries|length }} Competitor{{ entries|length|pluralize }}
+            </span>
+        </div>
+
+        {% if entries %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle" style="--bs-table-bg: transparent;">
+                    <thead style="border-bottom: 1px solid var(--border-subtle); color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <tr>
+                            <th class="ps-4 py-3 text-center" style="width: 70px;">Rank</th>
+                            <th class="py-3">Member</th>
+                            <th class="py-3 text-center">Skill Score</th>
+                            <th class="py-3 text-center">Credits</th>
+                            <th class="py-3 text-center">Badges</th>
+                            <th class="pe-4 py-3 text-end">Total Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04); {% if entry.user == request.user %}background: rgba(99, 102, 241, 0.08);{% endif %}">
+                                <td class="ps-4 py-3 text-center">
+                                    {% if entry.rank == 1 %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; font-weight: 800; font-size: 0.85rem;">
+                                            <i class="bi bi-crown-fill"></i> #1
+                                        </span>
+                                    {% elif entry.rank == 2 %}
+                                        <span class="badge" style="background: #cbd5e1; color: #111827; font-weight: 800; font-size: 0.85rem;">
+                                            #2
+                                        </span>
+                                    {% elif entry.rank == 3 %}
+                                        <span class="badge" style="background: #d97706; color: #fff; font-weight: 800; font-size: 0.85rem;">
+                                            #3
+                                        </span>
+                                    {% else %}
+                                        <span class="font-monospace text-muted fw-bold">#{{ entry.rank }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="mp-user-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
+                                            {{ entry.user.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <a href="{% url 'mentor_detail' entry.user.id %}" class="text-light fw-bold text-decoration-none hover-primary">
+                                                    {{ entry.user.get_full_name|default:entry.user.username }}
+                                                </a>
+                                                {% if entry.user == request.user %}
+                                                    <span class="badge bg-primary text-light font-monospace" style="font-size: 0.65rem;">YOU</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="small text-muted d-flex align-items-center gap-2">
+                                                <span>@{{ entry.user.username }}</span>
+                                                {% if entry.user.profile.is_mentor %}
+                                                    <span class="badge bg-success bg-opacity-15 text-success" style="font-size: 0.65rem;">Mentor</span>
+                                                {% endif %}
+                                                {% if entry.user.profile.is_learner %}
+                                                    <span class="badge bg-info bg-opacity-15 text-info" style="font-size: 0.65rem;">Learner</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 text-center font-monospace">
+                                    <span class="text-light fw-semibold">{{ entry.user.profile.skill_score|default:0.0 }}</span>
+                                </td>
+                                <td class="py-3 text-center font-monospace">
+                                    <span class="text-warning fw-semibold">{{ entry.user.credit.balance|default:50 }} CR</span>
+                                </td>
+                                <td class="py-3 text-center">
+                                    <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-25 font-monospace">
+                                        <i class="bi bi-award-fill me-1"></i> {{ entry.user.user_badges.count }}
+                                    </span>
+                                </td>
+                                <td class="pe-4 py-3 text-end font-monospace">
+                                    <span class="text-light fw-bold fs-6">{{ entry.score }}</span>
+                                    <span class="small text-muted">pts</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-trophy display-4 opacity-25 mb-3 d-block"></i>
+                <h6 class="text-light fw-bold">No Leaderboard Entries Found</h6>
+                <p class="small mb-0">No participants matched your search criteria.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

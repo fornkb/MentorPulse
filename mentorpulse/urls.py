@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('mentors/', include('matching.urls')),
     path('mentorships/', include('mentorship.urls')),
+    path('', include('gamification.urls')),
     path('', include('accounts.urls')),
 ]
 

@@ -13,6 +13,8 @@ from .forms import (
     DiscussionPostForm
 )
 from matching.services import calculate_match_score
+from gamification.services import CreditService, FeedbackService, BadgeService, LeaderboardService
+from gamification.forms import FeedbackForm
 
 
 @login_required
@@ -51,6 +53,17 @@ def request_mentorship_view(request, mentor_id):
     if request.method == 'POST':
         form = MentorshipRequestForm(request.POST)
         if form.is_valid():
+            is_priority = form.cleaned_data.get('is_priority', False)
+            success, msg = CreditService.deduct_for_request(request.user, is_priority=is_priority)
+            if not success:
+                messages.error(request, msg)
+                return render(request, 'mentorship/request_mentorship.html', {
+                    'mentor': mentor,
+                    'profile': mentor.profile,
+                    'form': form,
+                    'match_data': match_data,
+                })
+
             mentorship = form.save(commit=False)
             mentorship.learner = request.user
             mentorship.mentor = mentor
@@ -60,7 +73,8 @@ def request_mentorship_view(request, mentor_id):
             messages.success(
                 request,
                 f"Your mentorship request has been submitted to {mentor.get_full_name() or mentor.username}! "
-                f"{'⭐ Priority flag activated.' if mentorship.is_priority else ''}"
+                f"{'⭐ Priority flag activated.' if mentorship.is_priority else ''} "
+                f"({15 if is_priority else 10} credits deducted from your wallet)."
             )
             return redirect('mentorship_list')
     else:
@@ -73,6 +87,7 @@ def request_mentorship_view(request, mentor_id):
         'match_data': match_data,
     }
     return render(request, 'mentorship/request_mentorship.html', context)
+
 
 
 @login_required
@@ -161,7 +176,8 @@ def reject_mentorship_view(request, mentorship_id):
     if mentorship.status == 'PENDING':
         mentorship.status = 'REJECTED'
         mentorship.save()
-        messages.info(request, f"Mentorship request from {mentorship.learner.username} was declined.")
+        CreditService.refund_for_request(mentorship)
+        messages.info(request, f"Mentorship request from {mentorship.learner.username} was declined and credits were refunded.")
 
     return redirect('mentorship_list')
 
@@ -174,7 +190,8 @@ def cancel_mentorship_view(request, mentorship_id):
     if mentorship.status == 'PENDING':
         mentorship.status = 'CANCELLED'
         mentorship.save()
-        messages.info(request, "Your mentorship request was cancelled.")
+        CreditService.refund_for_request(mentorship)
+        messages.info(request, "Your mentorship request was cancelled and your credits were refunded.")
 
     return redirect('mentorship_list')
 
@@ -200,12 +217,15 @@ def mentorship_workspace_view(request, mentorship_id):
     milestone_form = MilestoneForm()
     resource_form = ResourceForm()
     discussion_form = DiscussionPostForm()
+    feedback_form = FeedbackForm()
 
     # Content
     sessions = mentorship.sessions.all().order_by('date')
     milestones = mentorship.milestones.all().order_by('id')
     resources = mentorship.resources.all().order_by('-created_at')
     discussion_posts = mentorship.discussion_posts.all().select_related('author').order_by('created_at')
+    feedbacks = mentorship.feedbacks.all().select_related('given_by', 'given_to').order_by('-created_at')
+    has_given_feedback = mentorship.feedbacks.filter(given_by=request.user).exists()
 
     # Completed metrics
     completed_milestones = milestones.filter(is_completed=True).count()
@@ -218,12 +238,15 @@ def mentorship_workspace_view(request, mentorship_id):
         'milestones': milestones,
         'resources': resources,
         'discussion_posts': discussion_posts,
+        'feedbacks': feedbacks,
+        'has_given_feedback': has_given_feedback,
         'completed_milestones': completed_milestones,
         'completed_sessions': completed_sessions,
         'session_form': session_form,
         'milestone_form': milestone_form,
         'resource_form': resource_form,
         'discussion_form': discussion_form,
+        'feedback_form': feedback_form,
         'is_mentor': request.user == mentorship.mentor,
         'is_learner': request.user == mentorship.learner,
     }
@@ -262,7 +285,11 @@ def session_toggle_view(request, session_id):
     session.save()
     session.mentorship.progress.recalculate()
 
-    messages.success(request, f"Session marked as {'completed' if session.is_completed else 'incomplete'}.")
+    if session.is_completed:
+        CreditService.reward_mentor_for_session(session)
+        messages.success(request, "Session marked as completed! Mentor awarded +10 credits.")
+    else:
+        messages.success(request, "Session marked as incomplete.")
     return redirect('mentorship_workspace', mentorship_id=session.mentorship.id)
 
 
@@ -315,6 +342,8 @@ def resource_add_view(request, mentorship_id):
             resource.mentorship = mentorship
             resource.uploaded_by = request.user
             resource.save()
+            BadgeService.check_and_award_badges(request.user)
+            LeaderboardService.recalculate_leaderboard()
             messages.success(request, f"Shared resource: '{resource.title}' ({resource.type}).")
         else:
             for field, errs in form.errors.items():
@@ -355,6 +384,11 @@ def mentorship_complete_view(request, mentorship_id):
         mentorship.end_date = timezone.now().date()
         mentorship.save()
         mentorship.progress.recalculate()
+
+        # Check badges for both parties & refresh leaderboard
+        BadgeService.check_and_award_badges(mentorship.mentor)
+        BadgeService.check_and_award_badges(mentorship.learner)
+        LeaderboardService.recalculate_leaderboard()
 
         messages.success(request, "Congratulations! This mentorship has been marked as COMPLETED. Your certificate is now unlocked!")
         return redirect('mentorship_certificate', mentorship_id=mentorship.id)

@@ -121,6 +121,12 @@
                 <span class="badge bg-dark border border-secondary text-secondary ms-1">{{ discussion_posts.count }}</span>
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="feedback-tab" data-bs-toggle="pill" data-bs-target="#feedback" type="button" role="tab" aria-controls="feedback" aria-selected="false">
+                <i class="bi bi-star-fill text-warning me-1"></i> Reviews & Ratings
+                <span class="badge bg-dark border border-secondary text-secondary ms-1">{{ feedbacks.count }}</span>
+            </button>
+        </li>
     </ul>
 
     <!-- Workspace Tab Content Panes -->
@@ -547,6 +553,135 @@
                             <div class="p-4 text-center text-muted">
                                 <i class="bi bi-chat-dots fs-3 mb-2 d-block text-secondary"></i>
                                 <p class="mb-0">No discussion messages yet. Start the conversation above!</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: REVIEWS & RATINGS -->
+        <div class="tab-pane fade" id="feedback" role="tabpanel" aria-labelledby="feedback-tab">
+            <div class="row g-4">
+                <!-- Sidebar info / summary -->
+                <div class="col-12 col-lg-4">
+                    <div class="mp-card p-4 mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-star-fill text-warning fs-5"></i>
+                            <h4 class="h6 fw-bold text-light mb-0">Collaboration Feedback</h4>
+                        </div>
+                        <p class="small text-muted mb-3">
+                            Honest feedback improves mutual trust, unlocks platform badges (e.g. <em>Top Rated</em>), and drives reputation on the Leaderboard.
+                        </p>
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small text-muted">Feedback Received:</span>
+                                <span class="fw-bold text-light font-monospace">{{ feedbacks|length }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">Status:</span>
+                                {% if has_given_feedback %}
+                                    <span class="badge bg-success bg-opacity-20 text-success">Submitted</span>
+                                {% else %}
+                                    <span class="badge bg-warning bg-opacity-20 text-warning">Pending Your Review</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main feedback stream and submission -->
+                <div class="col-12 col-lg-8">
+                    
+                    <!-- Feedback Submission Form Card (if not yet submitted) -->
+                    {% if not has_given_feedback %}
+                        <div class="mp-card mb-4 p-4" style="border-color: rgba(245, 158, 11, 0.3);">
+                            <h5 class="fw-bold text-light mb-1">
+                                <i class="bi bi-pencil-square text-warning me-2"></i> Submit Your Review
+                            </h5>
+                            <p class="small text-muted mb-3">
+                                Share your rating and comments for 
+                                <strong>
+                                    {% if is_mentor %}{{ mentorship.learner.get_full_name|default:mentorship.learner.username }}{% else %}{{ mentorship.mentor.get_full_name|default:mentorship.mentor.username }}{% endif %}
+                                </strong>.
+                            </p>
+
+                            <form method="post" action="{% url 'feedback_submit' mentorship.id %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="mp-form-label">
+                                        <i class="bi bi-star-half text-warning me-1"></i> Star Rating (1 to 5)
+                                    </label>
+                                    <select name="rating" class="form-select mp-form-control" required>
+                                        <option value="5" selected>5 Stars — Outstanding Collaboration</option>
+                                        <option value="4">4 Stars — Great Experience</option>
+                                        <option value="3">3 Stars — Good / Meets Expectations</option>
+                                        <option value="2">2 Stars — Fair / Needs Improvement</option>
+                                        <option value="1">1 Star — Poor Experience</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="mp-form-label">
+                                        <i class="bi bi-chat-heart text-primary me-1"></i> Review Comments
+                                    </label>
+                                    <textarea name="comment" class="form-control mp-form-control" rows="3" placeholder="Describe what went well, guidance received, or mutual achievements..." required></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm px-4">
+                                        <i class="bi bi-check-circle-fill"></i> Publish Feedback
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
+                            <i class="bi bi-check-circle-fill fs-5"></i>
+                            <div>You have already submitted your review for this mentorship. Thank you!</div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Feedbacks List -->
+                    <div class="vstack gap-3">
+                        {% for fb in feedbacks %}
+                            <div class="mp-card p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="mp-user-avatar" style="width: 36px; height: 36px; font-size: 0.95rem;">
+                                            {{ fb.given_by.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-light">{{ fb.given_by.get_full_name|default:fb.given_by.username }}</span>
+                                            {% if fb.given_by == mentorship.mentor %}
+                                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace ms-1" style="font-size: 0.65rem;">Mentor</span>
+                                            {% else %}
+                                                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 font-monospace ms-1" style="font-size: 0.65rem;">Learner</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="mp-star-rating" title="{{ fb.rating }} out of 5 stars">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= fb.rating %}
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star text-muted opacity-25"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <span class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                            {{ fb.created_at|date:"M d, Y" }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line;">
+                                    {{ fb.comment }}
+                                </p>
+                            </div>
+                        {% empty %}
+                            <div class="p-4 text-center text-muted">
+                                <i class="bi bi-stars fs-3 mb-2 d-block text-warning opacity-50"></i>
+                                <p class="mb-0">No feedback entries published yet for this mentorship.</p>
                             </div>
                         {% endfor %}
                     </div>

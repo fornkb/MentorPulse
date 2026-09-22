@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Badges & Achievements — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="mp-badge mp-badge-primary">Gamification & Milestones</span>
+                <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-25 font-monospace">Achievements Showcase</span>
+            </div>
+            <h1 class="h2 fw-bold text-light mb-1">Badges & Achievements</h1>
+            <p class="text-muted mb-0">Unlock achievements across your learning and mentoring journey to boost your leaderboard ranking.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'leaderboard' %}" class="mp-btn mp-btn-secondary">
+                <i class="bi bi-trophy-fill"></i> Leaderboard
+            </a>
+            <a href="{% url 'wallet' %}" class="mp-btn mp-btn-primary">
+                <i class="bi bi-coin"></i> My Wallet
+            </a>
+        </div>
+    </div>
+
+    <!-- Overall Progress Card -->
+    <div class="mp-card p-4 mb-5" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, var(--bg-card) 100%); border-color: rgba(99, 102, 241, 0.3);">
+        <div class="row align-items-center g-4">
+            <div class="col-12 col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-circle" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                        <i class="bi bi-award-fill fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-light mb-1">{{ unlocked_count }} of {{ total_badges_count }} Badges Unlocked</h4>
+                        <p class="small text-muted mb-0">Each unlocked badge awards +15 points directly to your platform leaderboard score.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="d-flex justify-content-between small text-muted mb-2 font-monospace">
+                    <span>PROGRESS</span>
+                    <span>{% widthratio unlocked_count total_badges_count 100 %}% COMPLETED</span>
+                </div>
+                <div class="progress" style="height: 10px; background-color: rgba(255, 255, 255, 0.08); border-radius: 9999px;">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: {% widthratio unlocked_count total_badges_count 100 %}%; background: linear-gradient(90deg, var(--primary) 0%, var(--accent-cyan) 100%);" 
+                         aria-valuenow="{% widthratio unlocked_count total_badges_count 100 %}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Badges Grid -->
+    <div class="row g-4">
+        {% for item in badges_data %}
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="mp-badge-card {% if item.is_unlocked %}unlocked{% else %}locked{% endif %} d-flex flex-column text-center">
+                    
+                    <!-- Top Status Pill -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="font-monospace small text-muted opacity-75">ID: #{{ item.badge.id }}</span>
+                        {% if item.is_unlocked %}
+                            <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30">
+                                <i class="bi bi-check-circle-fill me-1"></i> Unlocked
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-25 text-muted border border-secondary border-opacity-25">
+                                <i class="bi bi-lock-fill me-1"></i> Locked
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Badge Icon Box -->
+                    <div class="mp-badge-icon-box">
+                        <i class="bi {{ item.badge.icon }} {% if item.is_unlocked %}text-primary{% else %}text-muted{% endif %}"></i>
+                    </div>
+
+                    <!-- Badge Name & Description -->
+                    <h5 class="fw-bold text-light mb-2">{{ item.badge.name }}</h5>
+                    <p class="small text-muted mb-4 flex-grow-1">{{ item.badge.description }}</p>
+
+                    <!-- Criteria & Footer -->
+                    <div class="border-top border-secondary border-opacity-25 pt-3 mt-auto">
+                        <div class="small text-muted mb-2">
+                            <i class="bi bi-tag-fill text-warning me-1"></i>
+                            <span class="fw-semibold text-light">Category:</span> {{ item.badge.category }}
+                        </div>
+                        
+                        {% if item.is_unlocked and item.earned_date %}
+                            <div class="small text-success font-monospace" style="font-size: 0.75rem;">
+                                <i class="bi bi-calendar-check me-1"></i> Earned {{ item.earned_date|date:"M d, Y" }}
+                            </div>
+                        {% else %}
+                            <div class="small text-muted font-monospace opacity-50" style="font-size: 0.75rem;">
+                                Not yet earned
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="bi bi-award display-4 opacity-25 mb-3 d-block"></i>
+                <h5 class="text-light">No Badges Available</h5>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

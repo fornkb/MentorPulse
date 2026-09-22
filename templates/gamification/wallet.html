@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Credit Wallet — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="mp-badge mp-badge-primary">Internal Economy</span>
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 font-monospace">Closed-Loop Credits</span>
+            </div>
+            <h1 class="h2 fw-bold text-light mb-1">Credit Wallet</h1>
+            <p class="text-muted mb-0">Track your platform credits, session earnings, and engagement ledger.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-primary">
+                <i class="bi bi-compass-fill"></i> Find Mentors
+            </a>
+            <a href="{% url 'leaderboard' %}" class="mp-btn mp-btn-secondary">
+                <i class="bi bi-trophy-fill"></i> Leaderboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Balance & Stats Cards -->
+    <div class="row g-4 mb-5">
+        <!-- Current Balance Card -->
+        <div class="col-12 col-md-4">
+            <div class="mp-card p-4 h-100 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, var(--bg-card) 100%); border-color: rgba(245, 158, 11, 0.35);">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-uppercase fw-bold small text-warning opacity-75">Available Balance</span>
+                    <div class="p-2 rounded-circle" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
+                        <i class="bi bi-coin fs-4"></i>
+                    </div>
+                </div>
+                <div class="display-5 fw-bold text-light mb-1">
+                    {{ credit.balance }} <span class="fs-4 text-warning fw-semibold">CR</span>
+                </div>
+                <p class="small text-muted mb-0">Usable for booking mentor sessions and priority matching.</p>
+            </div>
+        </div>
+
+        <!-- Total Earned Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="mp-card p-4 h-100" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-card) 100%); border-color: rgba(16, 185, 129, 0.25);">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-uppercase fw-bold small text-success opacity-75">Total Earned</span>
+                    <div class="p-2 rounded-circle" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                        <i class="bi bi-arrow-down-left-circle-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="display-6 fw-bold text-light mb-1 text-success">
+                    +{{ total_earned }} <span class="fs-5 text-muted fw-normal">CR</span>
+                </div>
+                <p class="small text-muted mb-0">From sign-up bonus, session rewards, and refunds.</p>
+            </div>
+        </div>
+
+        <!-- Total Spent Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="mp-card p-4 h-100" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, var(--bg-card) 100%); border-color: rgba(244, 63, 94, 0.25);">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-uppercase fw-bold small text-danger opacity-75">Total Spent</span>
+                    <div class="p-2 rounded-circle" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">
+                        <i class="bi bi-arrow-up-right-circle-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="display-6 fw-bold text-light mb-1" style="color: #fb7185;">
+                    -{{ total_spent }} <span class="fs-5 text-muted fw-normal">CR</span>
+                </div>
+                <p class="small text-muted mb-0">Invested in mentorship requests and priority matching.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How Credit Economy Works Accordion / Guide -->
+    <div class="mp-card p-4 mb-5" style="border-color: rgba(99, 102, 241, 0.25);">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+            <h5 class="fw-bold text-light mb-0">How the MentorPulse Credit Economy Works</h5>
+        </div>
+        <div class="row g-3 text-muted small">
+            <div class="col-12 col-md-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                    <div class="text-light fw-bold mb-1"><i class="bi bi-gift-fill text-warning me-1"></i> Starting Bonus</div>
+                    <div class="text-success fw-semibold mb-1">+50 Credits</div>
+                    <div>Every new member receives 50 credits on registration to jumpstart their learning.</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                    <div class="text-light fw-bold mb-1"><i class="bi bi-send-check-fill text-info me-1"></i> Session Booking</div>
+                    <div class="text-danger fw-semibold mb-1">-10 Credits</div>
+                    <div>Deducted upon requesting mentorship. Priority matching requires +5 credits.</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                    <div class="text-light fw-bold mb-1"><i class="bi bi-arrow-counterclockwise text-primary me-1"></i> Refund Guarantee</div>
+                    <div class="text-success fw-semibold mb-1">100% Refunded</div>
+                    <div>If your request is rejected or cancelled before acceptance, all credits are instantly returned.</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                    <div class="text-light fw-bold mb-1"><i class="bi bi-trophy-fill text-warning me-1"></i> Mentor Rewards</div>
+                    <div class="text-success fw-semibold mb-1">+10 Credits</div>
+                    <div>Mentors earn +10 credits for every milestone/session successfully completed with a mentee.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Ledger -->
+    <div class="mp-card overflow-hidden">
+        <div class="p-4 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-light mb-0">
+                <i class="bi bi-clock-history me-2 text-primary"></i> Transaction History
+            </h5>
+            <span class="badge bg-secondary bg-opacity-25 text-light font-monospace">{{ transactions|length }} Record{{ transactions|length|pluralize }}</span>
+        </div>
+
+        {% if transactions %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle" style="--bs-table-bg: transparent;">
+                    <thead style="border-bottom: 1px solid var(--border-subtle); color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <tr>
+                            <th class="ps-4 py-3">Date & Time</th>
+                            <th class="py-3">Type</th>
+                            <th class="py-3">Description</th>
+                            <th class="pe-4 py-3 text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transactions %}
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                                <td class="ps-4 py-3 small text-muted font-monospace">
+                                    {{ tx.created_at|date:"M d, Y" }} <span class="opacity-50">{{ tx.created_at|date:"H:i" }}</span>
+                                </td>
+                                <td class="py-3">
+                                    {% if tx.reason == 'STARTING_BONUS' %}
+                                        <span class="badge bg-warning bg-opacity-15 text-warning border border-warning border-opacity-25">
+                                            <i class="bi bi-gift-fill me-1"></i> Starting Bonus
+                                        </span>
+                                    {% elif tx.reason == 'SESSION_REQUEST' %}
+                                        <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-25">
+                                            <i class="bi bi-send-fill me-1"></i> Session Request
+                                        </span>
+                                    {% elif tx.reason == 'PRIORITY_UNLOCK' %}
+                                        <span class="badge bg-purple bg-opacity-15 text-purple border border-purple border-opacity-25" style="background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3);">
+                                            <i class="bi bi-lightning-charge-fill me-1"></i> Priority Unlock
+                                        </span>
+                                    {% elif tx.reason == 'SESSION_REFUND' %}
+                                        <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Session Refund
+                                        </span>
+                                    {% elif tx.reason == 'SESSION_COMPLETED_REWARD' %}
+                                        <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25">
+                                            <i class="bi bi-check2-circle me-1"></i> Completion Reward
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary bg-opacity-25 text-light">
+                                            {{ tx.get_reason_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 small text-light">
+                                    {{ tx.context|default:"—" }}
+                                </td>
+                                <td class="pe-4 py-3 text-end font-monospace fw-bold">
+                                    {% if tx.amount > 0 %}
+                                        <span class="text-success">+{{ tx.amount }} CR</span>
+                                    {% else %}
+                                        <span class="text-danger">{{ tx.amount }} CR</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-wallet2 display-4 opacity-25 mb-3 d-block"></i>
+                <h6 class="text-light fw-bold">No Transactions Recorded Yet</h6>
+                <p class="small mb-0">Your wallet history will populate as you initiate mentorships or complete sessions.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
