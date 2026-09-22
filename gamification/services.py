@@ -1,8 +1,10 @@
 from django.contrib.auth.models import User
 from django.db.models import Avg, Q
 from django.utils import timezone
+from django.urls import reverse
 from .models import Credit, CreditTransaction, Feedback, Badge, UserBadge, LeaderboardEntry
 from mentorship.models import Mentorship, Resource
+from notifications.services import send_notification
 
 
 class CreditService:
@@ -135,6 +137,13 @@ class FeedbackService:
             comment=comment
         )
 
+        send_notification(
+            user=given_to,
+            message=f"You received a {rating}-star rating and review from {given_by.get_full_name() or given_by.username}!",
+            type='FEEDBACK_RECEIVED',
+            link=reverse('mentorship_workspace', args=[mentorship.id])
+        )
+
         # Check badges for review recipient and giver
         BadgeService.check_and_award_badges(given_to)
         BadgeService.check_and_award_badges(given_by)
@@ -259,6 +268,14 @@ class BadgeService:
             _, created = UserBadge.objects.get_or_create(user=user, badge=b)
             if created:
                 newly_awarded.append(b)
+
+        for b in newly_awarded:
+            send_notification(
+                user=user,
+                message=f"🏆 Achievement Unlocked: You earned the '{b.name}' badge!",
+                type='BADGE_EARNED',
+                link=reverse('badges')
+            )
 
         return newly_awarded
 

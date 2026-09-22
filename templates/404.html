@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}404 — Page Not Found | MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-md-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
+            
+            <div class="mp-card mp-card-glass p-5 border-primary border-opacity-25 shadow-lg">
+                <div class="mp-stat-icon mp-stat-icon-indigo mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                    <i class="bi bi-compass"></i>
+                </div>
+
+                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace mb-2 px-3 py-1">
+                    Error 404
+                </span>
+
+                <h1 class="h2 fw-bold text-light mb-3">Page Not Found</h1>
+                <p class="text-muted mb-4" style="font-size: 0.98rem; line-height: 1.6;">
+                    The page or resource you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+                </p>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                    <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}" class="mp-btn mp-btn-primary">
+                        <i class="bi bi-house-door-fill"></i> Return to Dashboard
+                    </a>
+                    <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-secondary">
+                        <i class="bi bi-compass-fill"></i> Browse Mentors
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

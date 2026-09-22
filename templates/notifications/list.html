@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Notification Center — MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-light mb-1">
+                <i class="bi bi-bell-fill text-primary me-2"></i> Notification Center
+            </h1>
+            <p class="text-muted small mb-0">Stay updated on mentorship requests, session schedules, feedback, and badges</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if unread_count > 0 %}
+                <a href="{% url 'notification_mark_all_read' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-check2-all text-success"></i> Mark All as Read
+                </a>
+            {% endif %}
+            {% if total_count > unread_count %}
+                <a href="{% url 'notification_clear_read' %}" class="mp-btn mp-btn-secondary mp-btn-sm text-danger border-danger border-opacity-25" onclick="return confirm('Clear all read notifications?');">
+                    <i class="bi bi-trash3"></i> Clear Read
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-25 pb-3 mb-4">
+        <ul class="nav nav-pills gap-2" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link {% if active_tab == 'all' %}active{% endif %} fw-semibold px-3 py-2" href="{% url 'notifications_list' %}?tab=all">
+                    <i class="bi bi-collection-fill me-1"></i> All Notifications
+                    <span class="badge bg-dark border border-secondary text-secondary ms-1 font-monospace">{{ total_count }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_tab == 'unread' %}active{% endif %} fw-semibold px-3 py-2" href="{% url 'notifications_list' %}?tab=unread">
+                    <i class="bi bi-envelope-open-fill me-1"></i> Unread Only
+                    {% if unread_count > 0 %}
+                        <span class="badge bg-danger text-light ms-1 font-monospace">{{ unread_count }}</span>
+                    {% else %}
+                        <span class="badge bg-dark border border-secondary text-secondary ms-1 font-monospace">0</span>
+                    {% endif %}
+                </a>
+            </li>
+        </ul>
+
+        <div class="text-muted small font-monospace d-none d-md-block">
+            Showing {{ notifications.count }} item{{ notifications.count|pluralize }}
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    {% if notifications %}
+        <div class="vstack gap-3">
+            {% for n in notifications %}
+                <div class="mp-card p-3 p-md-4 transition-all {% if not n.is_read %}border-primary border-opacity-50 shadow-sm{% else %}border-secondary border-opacity-25 opacity-85{% endif %}"
+                     style="{% if not n.is_read %}background: linear-gradient(135deg, rgba(23, 32, 51, 0.95) 0%, rgba(99, 102, 241, 0.06) 100%);{% endif %}">
+                    
+                    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                        <div class="d-flex align-items-start gap-3">
+                            
+                            <!-- Icon -->
+                            <div class="mp-stat-icon {% if not n.is_read %}mp-stat-icon-indigo{% else %}mp-stat-icon-cyan{% endif %} flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                <i class="bi {{ n.get_icon }}"></i>
+                            </div>
+
+                            <!-- Notification Body -->
+                            <div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <span class="badge {{ n.get_badge_class }}" style="font-size: 0.7rem;">
+                                        {{ n.get_type_display }}
+                                    </span>
+                                    {% if not n.is_read %}
+                                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50" style="font-size: 0.68rem;">
+                                            <i class="bi bi-dot"></i> Unread
+                                        </span>
+                                    {% endif %}
+                                    <span class="small text-muted font-monospace" style="font-size: 0.75rem;">
+                                        <i class="bi bi-clock me-1"></i>{{ n.created_at|timesince }} ago
+                                    </span>
+                                </div>
+
+                                <p class="text-light mb-0 fw-medium" style="font-size: 0.95rem;">
+                                    {{ n.message }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex align-items-center gap-2 ms-auto ms-md-0 mt-2 mt-md-0 flex-shrink-0">
+                            {% if n.link %}
+                                <a href="{% url 'notification_read' n.id %}" class="mp-btn mp-btn-primary mp-btn-sm py-1 px-3">
+                                    <span>View Action</span>
+                                    <i class="bi bi-arrow-right small ms-1"></i>
+                                </a>
+                            {% elif not n.is_read %}
+                                <a href="{% url 'notification_read' n.id %}" class="mp-btn mp-btn-secondary mp-btn-sm py-1 px-3">
+                                    <i class="bi bi-check2"></i> Mark Read
+                                </a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="mp-card p-5 text-center text-muted">
+            <div class="mp-stat-icon mp-stat-icon-emerald mx-auto mb-3" style="width: 58px; height: 58px; font-size: 1.75rem;">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <h2 class="h5 fw-bold text-light mb-2">
+                {% if active_tab == 'unread' %}
+                    All Caught Up!
+                {% else %}
+                    No Notifications Yet
+                {% endif %}
+            </h2>
+            <p class="text-muted small mb-4 mx-auto" style="max-width: 460px;">
+                {% if active_tab == 'unread' %}
+                    You have zero unread notifications. Great job keeping your workspace up to date!
+                {% else %}
+                    Updates on mentorship requests, upcoming sessions, feedback, and badge achievements will appear right here.
+                {% endif %}
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'mentor_list' %}" class="mp-btn mp-btn-primary mp-btn-sm">
+                    <i class="bi bi-compass-fill"></i> Discover Mentors
+                </a>
+                <a href="{% url 'mentorship_list' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-chat-square-heart-fill"></i> Mentorship Hub
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

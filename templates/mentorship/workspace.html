@@ -295,10 +295,14 @@
                                     {% endif %}
 
                                     {% if s.meeting_link %}
-                                        <div class="small">
+                                        <div class="small d-flex align-items-center gap-2 mt-1">
                                             <a href="{{ s.meeting_link }}" target="_blank" class="text-cyan text-decoration-none fw-medium">
                                                 <i class="bi bi-camera-video-fill me-1"></i> Join Meeting Room
                                             </a>
+                                            <span class="text-secondary opacity-50">|</span>
+                                            <button type="button" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" onclick="navigator.clipboard.writeText('{{ s.meeting_link }}'); window.showToast('Meeting link copied to clipboard!', 'bi-clipboard-check text-cyan');" title="Copy Meeting Link to Clipboard">
+                                                <i class="bi bi-clipboard me-1"></i> Copy Link
+                                            </button>
                                         </div>
                                     {% endif %}
                                 </div>

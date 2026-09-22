@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponseForbidden, JsonResponse
+from django.urls import reverse
 from .models import Mentorship, Progress, Session, Milestone, Resource, DiscussionPost
 from .forms import (
     MentorshipRequestForm,
@@ -15,6 +16,7 @@ from .forms import (
 from matching.services import calculate_match_score
 from gamification.services import CreditService, FeedbackService, BadgeService, LeaderboardService
 from gamification.forms import FeedbackForm
+from notifications.services import send_notification
 
 
 @login_required
@@ -69,6 +71,13 @@ def request_mentorship_view(request, mentor_id):
             mentorship.mentor = mentor
             mentorship.status = 'PENDING'
             mentorship.save()
+
+            send_notification(
+                user=mentor,
+                message=f"New mentorship request from {request.user.get_full_name() or request.user.username}{' (⭐ Priority)' if mentorship.is_priority else ''}.",
+                type='REQUEST_RECEIVED',
+                link=reverse('mentorship_list')
+            )
 
             messages.success(
                 request,
@@ -161,6 +170,13 @@ def accept_mentorship_view(request, mentorship_id):
             text=f"Welcome to our mentorship! I have accepted your request and look forward to collaborating towards your goals: '{mentorship.goals}'."
         )
 
+        send_notification(
+            user=mentorship.learner,
+            message=f"{mentorship.mentor.get_full_name() or mentorship.mentor.username} accepted your mentorship request! Workspace is now open.",
+            type='REQUEST_ACCEPTED',
+            link=reverse('mentorship_workspace', args=[mentorship.id])
+        )
+
         messages.success(request, f"Mentorship with {mentorship.learner.get_full_name() or mentorship.learner.username} is now ACTIVE! Welcome to the workspace.")
         return redirect('mentorship_workspace', mentorship_id=mentorship.id)
 
@@ -177,6 +193,12 @@ def reject_mentorship_view(request, mentorship_id):
         mentorship.status = 'REJECTED'
         mentorship.save()
         CreditService.refund_for_request(mentorship)
+        send_notification(
+            user=mentorship.learner,
+            message=f"Your mentorship request to {mentorship.mentor.get_full_name() or mentorship.mentor.username} was declined. Credits were refunded.",
+            type='REQUEST_REJECTED',
+            link=reverse('mentorship_list')
+        )
         messages.info(request, f"Mentorship request from {mentorship.learner.username} was declined and credits were refunded.")
 
     return redirect('mentorship_list')
@@ -267,6 +289,15 @@ def session_add_view(request, mentorship_id):
             session.mentorship = mentorship
             session.save()
             mentorship.progress.recalculate()
+
+            other_user = mentorship.learner if request.user == mentorship.mentor else mentorship.mentor
+            send_notification(
+                user=other_user,
+                message=f"{request.user.get_full_name() or request.user.username} scheduled a new session for {session.date.strftime('%b %d at %I:%M %p')}.",
+                type='SESSION_LOGGED',
+                link=reverse('mentorship_workspace', args=[mentorship.id])
+            )
+
             messages.success(request, f"New session scheduled for {session.date.strftime('%b %d, %Y at %I:%M %p')}.")
         else:
             messages.error(request, "Failed to schedule session. Please verify date format.")
@@ -287,6 +318,19 @@ def session_toggle_view(request, session_id):
 
     if session.is_completed:
         CreditService.reward_mentor_for_session(session)
+        other_user = session.mentorship.learner if request.user == session.mentorship.mentor else session.mentorship.mentor
+        send_notification(
+            user=other_user,
+            message=f"Session on {session.date.strftime('%b %d')} was marked as completed.",
+            type='SESSION_LOGGED',
+            link=reverse('mentorship_workspace', args=[session.mentorship.id])
+        )
+        send_notification(
+            user=session.mentorship.mentor,
+            message="You earned +10 credits for completing a meeting session!",
+            type='SESSION_LOGGED',
+            link=reverse('wallet')
+        )
         messages.success(request, "Session marked as completed! Mentor awarded +10 credits.")
     else:
         messages.success(request, "Session marked as incomplete.")
@@ -389,6 +433,19 @@ def mentorship_complete_view(request, mentorship_id):
         BadgeService.check_and_award_badges(mentorship.mentor)
         BadgeService.check_and_award_badges(mentorship.learner)
         LeaderboardService.recalculate_leaderboard()
+
+        send_notification(
+            user=mentorship.learner,
+            message=f"Congratulations! Mentorship with {mentorship.mentor.get_full_name() or mentorship.mentor.username} is COMPLETED! Certificate unlocked.",
+            type='SESSION_LOGGED',
+            link=reverse('mentorship_certificate', args=[mentorship.id])
+        )
+        send_notification(
+            user=mentorship.mentor,
+            message=f"Mentorship with {mentorship.learner.get_full_name() or mentorship.learner.username} is COMPLETED. Thank you for guiding your learner!",
+            type='SESSION_LOGGED',
+            link=reverse('mentorship_workspace', args=[mentorship.id])
+        )
 
         messages.success(request, "Congratulations! This mentorship has been marked as COMPLETED. Your certificate is now unlocked!")
         return redirect('mentorship_certificate', mentorship_id=mentorship.id)

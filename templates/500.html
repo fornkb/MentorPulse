@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}500 — Server Error | MentorPulse{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-md-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
+            
+            <div class="mp-card mp-card-glass p-5 border-danger border-opacity-25 shadow-lg">
+                <div class="mp-stat-icon mp-stat-icon-amber mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 font-monospace mb-2 px-3 py-1">
+                    Error 500
+                </span>
+
+                <h1 class="h2 fw-bold text-light mb-3">Internal Server Error</h1>
+                <p class="text-muted mb-4" style="font-size: 0.98rem; line-height: 1.6;">
+                    Something unexpected happened while processing your request on our local server. The error has been logged.
+                </p>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                    <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}" class="mp-btn mp-btn-primary">
+                        <i class="bi bi-house-door-fill"></i> Return to Dashboard
+                    </a>
+                    <a href="{% url 'mentorship_list' %}" class="mp-btn mp-btn-secondary">
+                        <i class="bi bi-chat-square-heart-fill"></i> My Mentorships
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

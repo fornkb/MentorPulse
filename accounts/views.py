@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
+from django.http import HttpResponseForbidden
+from django.conf import settings
 from .models import Profile, Skill, RoleAssignment
 from .forms import (
     UserRegistrationForm,
@@ -188,3 +190,27 @@ def profile_edit_view(request):
         'current_skill_ids': current_skill_ids,
     }
     return render(request, 'accounts/profile_edit.html', context)
+
+
+def switch_user_view(request, user_id):
+    """Instant demo role & user switcher for live evaluations (DEBUG mode only)."""
+    if not settings.DEBUG:
+        return HttpResponseForbidden("Demo user switching is disabled outside DEBUG mode.")
+
+    target_user = get_object_or_404(User, id=user_id)
+    login(request, target_user, backend='django.contrib.auth.backends.ModelBackend')
+
+    role_label = "User"
+    if target_user.is_superuser or target_user.is_staff:
+        role_label = "Admin / Superuser"
+    elif hasattr(target_user, 'profile'):
+        roles = target_user.profile.active_roles
+        if roles:
+            role_label = " & ".join(roles)
+
+    messages.success(request, f"⚡ Switched to {target_user.get_full_name() or target_user.username} ({role_label})")
+    next_url = request.GET.get('next')
+    if next_url and next_url != request.path and not next_url.startswith('/switch-user/'):
+        return redirect(next_url)
+    return redirect('dashboard')
+
