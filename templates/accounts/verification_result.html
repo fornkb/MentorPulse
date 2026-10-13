@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Email verification — MentorPulse{% endblock %}
+{% block content %}<div class="container py-5"><div class="mp-card">
+{% if verified %}<h1 class="h4">Email verified</h1><p>Your email address has been verified.</p>{% else %}<h1 class="h4">Verification link expired or invalid</h1><p>Sign in and request a new link from your account settings.</p>{% endif %}
+<a class="mp-btn mp-btn-primary" href="{% url 'account_settings' %}">Account settings</a>
+</div></div>{% endblock %}

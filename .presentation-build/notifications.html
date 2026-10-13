@@ -1,0 +1,553 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MentorPulse — Skill-based mentor matching and progress tracking platform.">
+    <title>Notification Center — MentorPulse</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/.presentation-build/bootstrap.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/.presentation-build/icons.css">
+    <!-- Custom Design System -->
+    <link rel="stylesheet" href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/static/css/main.css">
+    
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="mp-navbar navbar navbar-expand-lg">
+        <div class="container">
+            <a class="mp-brand" href="/">
+                <span class="mp-brand-logo">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </span>
+                <span class="mp-brand-text">MentorPulse</span>
+                <span class="mp-brand-badge">v1.0 Ready</span>
+            </a>
+
+            <button class="navbar-toggler border-0 text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto ms-lg-4 mb-2 mb-lg-0">
+                    
+                        <li class="nav-item">
+                            <a class="nav-link " href="/">
+                                <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/mentorships/">
+                                <i class="bi bi-chat-square-heart-fill me-1"></i> Mentorships
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/mentors/">
+                                <i class="bi bi-compass-fill me-1"></i> Find Mentors
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/leaderboard/">
+                                <i class="bi bi-trophy-fill me-1"></i> Leaderboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/badges/">
+                                <i class="bi bi-award-fill me-1"></i> Badges
+                            </a>
+                        </li>
+                    
+                </ul>
+
+                <div class="d-flex align-items-center gap-2">
+                    
+                        <!-- One-Click Instant Demo User Switcher -->
+                        <div class="dropdown me-1">
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm dropdown-toggle d-flex align-items-center gap-1 border-warning text-warning" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Instant Demo Role / User Switcher">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                                <span class="d-none d-md-inline fw-semibold">Demo Switcher</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu shadow-lg py-2" style="min-width: 280px; max-height: 480px; overflow-y: auto;">
+                                <li class="px-3 py-1 text-uppercase font-monospace text-warning small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-shield-lock me-1"></i> Administrators
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/1/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem;">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">System Administrator</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@admin</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+
+                                <li class="dropdown-divider my-1 border-secondary border-opacity-25"></li>
+                                <li class="px-3 py-1 text-uppercase font-monospace text-info small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-patch-check-fill me-1"></i> Mentors
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/2/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">S</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Sarah Connor</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@sarah_backend</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/3/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">M</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Marcus Vance</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@marcus_frontend</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/4/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">D</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Elena Rostova</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@dr_elena</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/5/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Alex Morgan</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@alex_design</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/6/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">D</span>
+                                                <div>
+                                                    <div class="small fw-semibold">David Kim</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@david_devops</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+
+                                <li class="dropdown-divider my-1 border-secondary border-opacity-25"></li>
+                                <li class="px-3 py-1 text-uppercase font-monospace text-cyan small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-book-fill me-1"></i> Learners
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 active bg-primary bg-opacity-25 text-primary fw-bold" href="/switch-user/7/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Alex Rivera</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@alex_learner</div>
+                                                </div>
+                                            </div>
+                                            <i class="bi bi-check2 text-success fs-6"></i>
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/8/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">P</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Priya Sharma</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@priya_learner</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/9/?next=/notifications/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">J</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Jordan Lee</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@jordan_learner</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+                    
+
+                    
+                        <!-- Notification Bell Dropdown -->
+                        <div class="dropdown me-1">
+                            <button class="btn btn-dark border border-secondary border-opacity-25 text-light position-relative rounded-pill px-2 py-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                                <i class="bi bi-bell-fill fs-6"></i>
+                                
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25em 0.5em;">
+                                        2
+                                        <span class="visually-hidden">unread notifications</span>
+                                    </span>
+                                
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu shadow-lg p-0" style="width: 330px; max-height: 440px; overflow-y: auto;">
+                                <li class="px-3 py-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between bg-dark bg-opacity-50">
+                                    <span class="fw-bold text-light small">
+                                        <i class="bi bi-bell me-1"></i> Notifications
+                                    </span>
+                                    
+                                        <a href="/notifications/mark-all-read/" class="small text-decoration-none text-primary fw-medium" style="font-size: 0.75rem;">
+                                            Mark all read
+                                        </a>
+                                    
+                                </li>
+                                
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/16/read/">
+                                                <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        Sarah Connor accepted your mentorship request! Workspace is now open.
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/17/read/">
+                                                <i class="bi bi-calendar-event-fill text-info mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        Milestone &#x27;Build clean API views&#x27; completed! Progress is now 67%.
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                
+                                <li class="text-center p-2 bg-dark bg-opacity-50 border-top border-secondary border-opacity-25">
+                                    <a href="/notifications/" class="small text-primary text-decoration-none fw-semibold">
+                                        View All Notifications <i class="bi bi-arrow-right small"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- User Credit Balance Pill -->
+                        <a href="/wallet/" class="mp-credit-pill me-1" title="Credit Wallet — View & Earn Credits">
+                            <i class="bi bi-coin"></i>
+                            <span>40</span>
+                            <span class="d-none d-sm-inline opacity-75">Credits</span>
+                        </a>
+
+                        <!-- Active Role Indicators -->
+                        <div class="d-none d-xl-flex align-items-center gap-1 me-2">
+                            
+                            
+                                <span class="mp-badge role-badge-learner" title="Active Learner Role">
+                                    <i class="bi bi-book-fill"></i> Learner
+                                </span>
+                            
+                            
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn p-0 border-0 d-flex align-items-center gap-2 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="mp-user-avatar">
+                                    A
+                                </span>
+                                <span class="text-light fw-semibold small d-none d-sm-inline">
+                                    alex_learner
+                                </span>
+                                <i class="bi bi-chevron-down text-muted small"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu">
+                                <li class="px-3 py-2 border-bottom border-secondary border-opacity-25">
+                                    <div class="fw-bold text-light">Alex Rivera</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 180px;">alex.rivera@mentorpulse.local</div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item mt-1" href="/wallet/">
+                                        <i class="bi bi-coin text-warning"></i> My Wallet
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/profile/">
+                                        <i class="bi bi-person"></i> View Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/badges/">
+                                        <i class="bi bi-award text-info"></i> My Badges
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/profile/edit/">
+                                        <i class="bi bi-sliders"></i> Edit Profile & Skills
+                                    </a>
+                                </li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="/logout/">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="yKIeXeZVI20PXG3fx0TZAZUNaZrTuLuiEhrsgYbjXIsYwNBeX1O0ZcWI5PxZdtbY">
+                                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                                            <i class="bi bi-box-arrow-right"></i> Sign Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Global Messages Toast / Alert Container -->
+    <div class="container mt-3">
+        
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1">
+        
+<div class="container py-4">
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-light mb-1">
+                <i class="bi bi-bell-fill text-primary me-2"></i> Notification Center
+            </h1>
+            <p class="text-muted small mb-0">Stay updated on mentorship requests, session schedules, feedback, and badges</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            
+                <a href="/notifications/mark-all-read/" class="mp-btn mp-btn-secondary mp-btn-sm">
+                    <i class="bi bi-check2-all text-success"></i> Mark All as Read
+                </a>
+            
+            
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-25 pb-3 mb-4">
+        <ul class="nav nav-pills gap-2" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active fw-semibold px-3 py-2" href="/notifications/?tab=all">
+                    <i class="bi bi-collection-fill me-1"></i> All Notifications
+                    <span class="badge bg-dark border border-secondary text-secondary ms-1 font-monospace">2</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link  fw-semibold px-3 py-2" href="/notifications/?tab=unread">
+                    <i class="bi bi-envelope-open-fill me-1"></i> Unread Only
+                    
+                        <span class="badge bg-danger text-light ms-1 font-monospace">2</span>
+                    
+                </a>
+            </li>
+        </ul>
+
+        <div class="text-muted small font-monospace d-none d-md-block">
+            Showing 2 items
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    
+        <div class="vstack gap-3">
+            
+                <div class="mp-card p-3 p-md-4 transition-all border-primary border-opacity-50 shadow-sm"
+                     style="background: linear-gradient(135deg, rgba(23, 32, 51, 0.95) 0%, rgba(99, 102, 241, 0.06) 100%);">
+                    
+                    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                        <div class="d-flex align-items-start gap-3">
+                            
+                            <!-- Icon -->
+                            <div class="mp-stat-icon mp-stat-icon-indigo flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            </div>
+
+                            <!-- Notification Body -->
+                            <div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <span class="badge bg-success text-light" style="font-size: 0.7rem;">
+                                        Mentorship Request Accepted
+                                    </span>
+                                    
+                                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50" style="font-size: 0.68rem;">
+                                            <i class="bi bi-dot"></i> Unread
+                                        </span>
+                                    
+                                    <span class="small text-muted font-monospace" style="font-size: 0.75rem;">
+                                        <i class="bi bi-clock me-1"></i>5 days, 13 hours ago
+                                    </span>
+                                </div>
+
+                                <p class="text-light mb-0 fw-medium" style="font-size: 0.95rem;">
+                                    Sarah Connor accepted your mentorship request! Workspace is now open.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex align-items-center gap-2 ms-auto ms-md-0 mt-2 mt-md-0 flex-shrink-0">
+                            
+                                <a href="/notifications/16/read/" class="mp-btn mp-btn-primary mp-btn-sm py-1 px-3">
+                                    <span>View Action</span>
+                                    <i class="bi bi-arrow-right small ms-1"></i>
+                                </a>
+                            
+                        </div>
+
+                    </div>
+                </div>
+            
+                <div class="mp-card p-3 p-md-4 transition-all border-primary border-opacity-50 shadow-sm"
+                     style="background: linear-gradient(135deg, rgba(23, 32, 51, 0.95) 0%, rgba(99, 102, 241, 0.06) 100%);">
+                    
+                    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                        <div class="d-flex align-items-start gap-3">
+                            
+                            <!-- Icon -->
+                            <div class="mp-stat-icon mp-stat-icon-indigo flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                <i class="bi bi-calendar-event-fill text-info"></i>
+                            </div>
+
+                            <!-- Notification Body -->
+                            <div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <span class="badge bg-info text-dark" style="font-size: 0.7rem;">
+                                        Session Scheduled / Updated
+                                    </span>
+                                    
+                                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50" style="font-size: 0.68rem;">
+                                            <i class="bi bi-dot"></i> Unread
+                                        </span>
+                                    
+                                    <span class="small text-muted font-monospace" style="font-size: 0.75rem;">
+                                        <i class="bi bi-clock me-1"></i>5 days, 13 hours ago
+                                    </span>
+                                </div>
+
+                                <p class="text-light mb-0 fw-medium" style="font-size: 0.95rem;">
+                                    Milestone &#x27;Build clean API views&#x27; completed! Progress is now 67%.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex align-items-center gap-2 ms-auto ms-md-0 mt-2 mt-md-0 flex-shrink-0">
+                            
+                                <a href="/notifications/17/read/" class="mp-btn mp-btn-primary mp-btn-sm py-1 px-3">
+                                    <span>View Action</span>
+                                    <i class="bi bi-arrow-right small ms-1"></i>
+                                </a>
+                            
+                        </div>
+
+                    </div>
+                </div>
+            
+        </div>
+    
+
+</div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mp-footer">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center text-md-start">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-light">MentorPulse</span>
+                <span>— Skill-based Mentor Matching & Progress Tracking</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-dark border border-secondary text-secondary font-monospace" style="font-size: 0.72rem;">
+                    <i class="bi bi-hdd-network"></i> Local SQLite Build
+                </span>
+                <span class="small text-muted">&copy; 2026 MentorPulse</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+        <div id="mpToast" class="toast align-items-center text-bg-dark border border-primary border-opacity-50 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" id="mpToastBody">
+                    <i class="bi bi-check-circle-fill text-success fs-5" id="mpToastIcon"></i>
+                    <span id="mpToastText" class="fw-medium small">Action completed successfully.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.showToast = function(message, iconClass = 'bi-check-circle-fill text-success') {
+            const toastEl = document.getElementById('mpToast');
+            if (!toastEl) return;
+            document.getElementById('mpToastText').innerText = message;
+            const iconEl = document.getElementById('mpToastIcon');
+            iconEl.className = 'bi fs-5 ' + iconClass;
+            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        };
+    </script>
+    
+</body>
+</html>
+

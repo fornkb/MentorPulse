@@ -1,0 +1,1188 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MentorPulse — Skill-based mentor matching and progress tracking platform.">
+    <title>Mentorship Workspace — alex_learner & sarah_backend — MentorPulse</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/.presentation-build/bootstrap.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/.presentation-build/icons.css">
+    <!-- Custom Design System -->
+    <link rel="stylesheet" href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/static/css/main.css">
+    
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="mp-navbar navbar navbar-expand-lg">
+        <div class="container">
+            <a class="mp-brand" href="/">
+                <span class="mp-brand-logo">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </span>
+                <span class="mp-brand-text">MentorPulse</span>
+                <span class="mp-brand-badge">v1.0 Ready</span>
+            </a>
+
+            <button class="navbar-toggler border-0 text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto ms-lg-4 mb-2 mb-lg-0">
+                    
+                        <li class="nav-item">
+                            <a class="nav-link " href="/">
+                                <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/mentorships/">
+                                <i class="bi bi-chat-square-heart-fill me-1"></i> Mentorships
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/mentors/">
+                                <i class="bi bi-compass-fill me-1"></i> Find Mentors
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/leaderboard/">
+                                <i class="bi bi-trophy-fill me-1"></i> Leaderboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/badges/">
+                                <i class="bi bi-award-fill me-1"></i> Badges
+                            </a>
+                        </li>
+                    
+                </ul>
+
+                <div class="d-flex align-items-center gap-2">
+                    
+                        <!-- One-Click Instant Demo User Switcher -->
+                        <div class="dropdown me-1">
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm dropdown-toggle d-flex align-items-center gap-1 border-warning text-warning" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Instant Demo Role / User Switcher">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                                <span class="d-none d-md-inline fw-semibold">Demo Switcher</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu shadow-lg py-2" style="min-width: 280px; max-height: 480px; overflow-y: auto;">
+                                <li class="px-3 py-1 text-uppercase font-monospace text-warning small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-shield-lock me-1"></i> Administrators
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/1/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem;">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">System Administrator</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@admin</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+
+                                <li class="dropdown-divider my-1 border-secondary border-opacity-25"></li>
+                                <li class="px-3 py-1 text-uppercase font-monospace text-info small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-patch-check-fill me-1"></i> Mentors
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/2/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">S</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Sarah Connor</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@sarah_backend</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/3/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">M</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Marcus Vance</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@marcus_frontend</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/4/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">D</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Elena Rostova</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@dr_elena</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/5/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Alex Morgan</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@alex_design</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/6/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">D</span>
+                                                <div>
+                                                    <div class="small fw-semibold">David Kim</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@david_devops</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+
+                                <li class="dropdown-divider my-1 border-secondary border-opacity-25"></li>
+                                <li class="px-3 py-1 text-uppercase font-monospace text-cyan small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-book-fill me-1"></i> Learners
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 active bg-primary bg-opacity-25 text-primary fw-bold" href="/switch-user/7/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Alex Rivera</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@alex_learner</div>
+                                                </div>
+                                            </div>
+                                            <i class="bi bi-check2 text-success fs-6"></i>
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/8/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">P</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Priya Sharma</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@priya_learner</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/9/?next=/mentorships/1/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">J</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Jordan Lee</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@jordan_learner</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+                    
+
+                    
+                        <!-- Notification Bell Dropdown -->
+                        <div class="dropdown me-1">
+                            <button class="btn btn-dark border border-secondary border-opacity-25 text-light position-relative rounded-pill px-2 py-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                                <i class="bi bi-bell-fill fs-6"></i>
+                                
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25em 0.5em;">
+                                        2
+                                        <span class="visually-hidden">unread notifications</span>
+                                    </span>
+                                
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu shadow-lg p-0" style="width: 330px; max-height: 440px; overflow-y: auto;">
+                                <li class="px-3 py-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between bg-dark bg-opacity-50">
+                                    <span class="fw-bold text-light small">
+                                        <i class="bi bi-bell me-1"></i> Notifications
+                                    </span>
+                                    
+                                        <a href="/notifications/mark-all-read/" class="small text-decoration-none text-primary fw-medium" style="font-size: 0.75rem;">
+                                            Mark all read
+                                        </a>
+                                    
+                                </li>
+                                
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/16/read/">
+                                                <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        Sarah Connor accepted your mentorship request! Workspace is now open.
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/17/read/">
+                                                <i class="bi bi-calendar-event-fill text-info mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        Milestone &#x27;Build clean API views&#x27; completed! Progress is now 67%.
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                
+                                <li class="text-center p-2 bg-dark bg-opacity-50 border-top border-secondary border-opacity-25">
+                                    <a href="/notifications/" class="small text-primary text-decoration-none fw-semibold">
+                                        View All Notifications <i class="bi bi-arrow-right small"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- User Credit Balance Pill -->
+                        <a href="/wallet/" class="mp-credit-pill me-1" title="Credit Wallet — View & Earn Credits">
+                            <i class="bi bi-coin"></i>
+                            <span>40</span>
+                            <span class="d-none d-sm-inline opacity-75">Credits</span>
+                        </a>
+
+                        <!-- Active Role Indicators -->
+                        <div class="d-none d-xl-flex align-items-center gap-1 me-2">
+                            
+                            
+                                <span class="mp-badge role-badge-learner" title="Active Learner Role">
+                                    <i class="bi bi-book-fill"></i> Learner
+                                </span>
+                            
+                            
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn p-0 border-0 d-flex align-items-center gap-2 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="mp-user-avatar">
+                                    A
+                                </span>
+                                <span class="text-light fw-semibold small d-none d-sm-inline">
+                                    alex_learner
+                                </span>
+                                <i class="bi bi-chevron-down text-muted small"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu">
+                                <li class="px-3 py-2 border-bottom border-secondary border-opacity-25">
+                                    <div class="fw-bold text-light">Alex Rivera</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 180px;">alex.rivera@mentorpulse.local</div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item mt-1" href="/wallet/">
+                                        <i class="bi bi-coin text-warning"></i> My Wallet
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/profile/">
+                                        <i class="bi bi-person"></i> View Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/badges/">
+                                        <i class="bi bi-award text-info"></i> My Badges
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/profile/edit/">
+                                        <i class="bi bi-sliders"></i> Edit Profile & Skills
+                                    </a>
+                                </li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="/logout/">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="aEp0e2DeWzlERUm1dFJU4Yvgvoph3zA9gb8exMPCbfNNq1U0DGEVtbxbqevnMhhP">
+                                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                                            <i class="bi bi-box-arrow-right"></i> Sign Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Global Messages Toast / Alert Container -->
+    <div class="container mt-3">
+        
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1">
+        
+<div class="container py-4">
+
+    <!-- Top Navigation & Back link -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <a href="/mentorships/" class="mp-btn mp-btn-secondary mp-btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Mentorship Central
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            
+                <form method="post" action="/mentorships/1/complete/" onsubmit="return confirm('Mark this mentorship as completed? This will finalize milestones and unlock your credential certificate.');">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="aEp0e2DeWzlERUm1dFJU4Yvgvoph3zA9gb8exMPCbfNNq1U0DGEVtbxbqevnMhhP">
+                    <button type="submit" class="mp-btn mp-btn-accent mp-btn-sm">
+                        <i class="bi bi-check2-all"></i> Finalize & Complete Mentorship
+                    </button>
+                </form>
+            
+        </div>
+    </div>
+
+    <!-- Workspace Master Header Card -->
+    <div class="mp-card mp-card-glass mb-4 p-4 p-md-5 border-primary border-opacity-25">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
+            
+            <!-- Participants summary -->
+            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-4">
+                
+                <!-- Learner Profile Bubble -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="mp-user-avatar shadow" style="width: 54px; height: 54px; font-size: 1.4rem;">
+                        A
+                    </div>
+                    <div>
+                        <div class="small text-muted font-monospace" style="font-size: 0.72rem;">LEARNER</div>
+                        <h2 class="h6 fw-bold text-light mb-0">Alex Rivera</h2>
+                        <span class="badge bg-secondary font-monospace" style="font-size: 0.7rem;">@alex_learner</span>
+                    </div>
+                </div>
+
+                <div class="d-none d-sm-block text-secondary fs-4"><i class="bi bi-arrow-left-right"></i></div>
+
+                <!-- Mentor Profile Bubble -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="mp-user-avatar shadow" style="width: 54px; height: 54px; font-size: 1.4rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                        S
+                    </div>
+                    <div>
+                        <div class="small text-muted font-monospace" style="font-size: 0.72rem;">MENTOR</div>
+                        <h2 class="h6 fw-bold text-light mb-0">Sarah Connor</h2>
+                        <span class="badge bg-secondary font-monospace" style="font-size: 0.7rem;">@sarah_backend</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Status & Overall Progress Widget -->
+            <div class="text-lg-end" style="min-width: 260px;">
+                <div class="d-flex align-items-center justify-content-lg-end gap-2 mb-2">
+                    
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 fs-6 px-3 py-1">
+                            <i class="bi bi-broadcast"></i> Active Workspace
+                        </span>
+                    
+                </div>
+
+                <div class="d-flex justify-content-between justify-content-lg-end align-items-center gap-3 small text-muted font-monospace mb-1">
+                    <span>PROGRESS</span>
+                    <span class="text-light fw-bold fs-6">62%</span>
+                </div>
+                <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.08);">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 61.7%;" aria-valuenow="61.7" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Workspace Tabs Navigation -->
+    <ul class="nav nav-pills mb-4 gap-2 border-bottom border-secondary border-opacity-25 pb-3" id="workspaceTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-semibold" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                <i class="bi bi-grid-fill me-1"></i> Overview
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="sessions-tab" data-bs-toggle="pill" data-bs-target="#sessions" type="button" role="tab" aria-controls="sessions" aria-selected="false">
+                <i class="bi bi-calendar3 me-1"></i> Sessions 
+                <span class="badge bg-dark border border-secondary text-secondary ms-1">2</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="milestones-tab" data-bs-toggle="pill" data-bs-target="#milestones" type="button" role="tab" aria-controls="milestones" aria-selected="false">
+                <i class="bi bi-check2-square me-1"></i> Milestones 
+                <span class="badge bg-dark border border-secondary text-secondary ms-1">2/3</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="resources-tab" data-bs-toggle="pill" data-bs-target="#resources" type="button" role="tab" aria-controls="resources" aria-selected="false">
+                <i class="bi bi-folder2-open me-1"></i> Resources 
+                <span class="badge bg-dark border border-secondary text-secondary ms-1">2</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="discussions-tab" data-bs-toggle="pill" data-bs-target="#discussions" type="button" role="tab" aria-controls="discussions" aria-selected="false">
+                <i class="bi bi-chat-dots me-1"></i> Discussions 
+                <span class="badge bg-dark border border-secondary text-secondary ms-1">3</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="feedback-tab" data-bs-toggle="pill" data-bs-target="#feedback" type="button" role="tab" aria-controls="feedback" aria-selected="false">
+                <i class="bi bi-star-fill text-warning me-1"></i> Reviews & Ratings
+                <span class="badge bg-dark border border-secondary text-secondary ms-1">0</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Workspace Tab Content Panes -->
+    <div class="tab-content" id="workspaceTabContent">
+
+        <!-- TAB 1: OVERVIEW -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+            <div class="row g-4">
+                <!-- Goals & Vision -->
+                <div class="col-12 col-lg-8">
+                    <div class="mp-card mb-4">
+                        <div class="mp-card-header">
+                            <h3 class="mp-card-title">
+                                <i class="bi bi-bullseye text-danger"></i> Target Learning Objectives
+                            </h3>
+                        </div>
+                        <p class="text-light" style="line-height: 1.8; white-space: pre-line; font-size: 0.95rem;">
+                            Master Django ORM, REST APIs, and database indexing for high-performance backend systems.
+                        </p>
+                    </div>
+
+                    <!-- Milestone Progress Checklist Snapshot -->
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h3 class="mp-card-title">
+                                <i class="bi bi-list-check text-primary"></i> Roadmap Milestones Snapshot
+                            </h3>
+                            <span class="small text-muted font-monospace">2/3 Completed</span>
+                        </div>
+
+                        
+                            <div class="vstack gap-2">
+                                
+                                    <div class="d-flex align-items-center justify-content-between p-2 rounded bg-dark bg-opacity-25 border border-secondary border-opacity-25">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                            <span class="text-decoration-line-through text-muted">
+                                                Master Django ORM relationships and query optimization
+                                            </span>
+                                        </div>
+                                        
+                                            <span class="small text-muted font-monospace" style="font-size: 0.72rem;">Done Sep 26</span>
+                                        
+                                    </div>
+                                
+                                    <div class="d-flex align-items-center justify-content-between p-2 rounded bg-dark bg-opacity-25 border border-secondary border-opacity-25">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                            <span class="text-decoration-line-through text-muted">
+                                                Build clean API views and serialize complex model relations
+                                            </span>
+                                        </div>
+                                        
+                                            <span class="small text-muted font-monospace" style="font-size: 0.72rem;">Done Oct 02</span>
+                                        
+                                    </div>
+                                
+                                    <div class="d-flex align-items-center justify-content-between p-2 rounded bg-dark bg-opacity-25 border border-secondary border-opacity-25">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-circle text-muted"></i>
+                                            <span class="text-light">
+                                                Implement authentication and write automated test cases
+                                            </span>
+                                        </div>
+                                        
+                                    </div>
+                                
+                            </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Stats & Meta -->
+                <div class="col-12 col-lg-4">
+                    <div class="mp-card mb-4">
+                        <div class="mp-card-header">
+                            <h3 class="mp-card-title">
+                                <i class="bi bi-speedometer2 text-cyan"></i> Metrics
+                            </h3>
+                        </div>
+                        <ul class="list-unstyled mb-0 vstack gap-2 small">
+                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span class="text-muted">Start Date:</span>
+                                <span class="text-light fw-medium">Oct 06, 2026</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span class="text-muted">Total Sessions:</span>
+                                <span class="text-light fw-medium">2 (1 completed)</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span class="text-muted">Milestones Done:</span>
+                                <span class="text-light fw-medium">2/3</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+                                <span class="text-muted">Shared Resources:</span>
+                                <span class="text-light fw-medium">2</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1">
+                                <span class="text-muted">Discussions Logged:</span>
+                                <span class="text-light fw-medium">3</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Fast actions -->
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h3 class="mp-card-title">
+                                <i class="bi bi-lightning text-amber"></i> Quick Actions
+                            </h3>
+                        </div>
+                        <div class="vstack gap-2">
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('sessions-tab').click(); document.getElementById('collapseSessionForm').classList.add('show');">
+                                <i class="bi bi-calendar-plus text-cyan"></i> Schedule New Meeting
+                            </button>
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('milestones-tab').click();">
+                                <i class="bi bi-plus-circle text-primary"></i> Add Milestone Task
+                            </button>
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('resources-tab').click(); document.getElementById('collapseResourceForm').classList.add('show');">
+                                <i class="bi bi-upload text-emerald"></i> Share Document or Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SESSIONS -->
+        <div class="tab-pane fade" id="sessions" role="tabpanel" aria-labelledby="sessions-tab">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h5 fw-bold text-light mb-0">Mentorship Sessions</h3>
+                <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm" aria-expanded="false" aria-controls="collapseSessionForm">
+                    <i class="bi bi-calendar-plus"></i> Schedule New Session
+                </button>
+            </div>
+
+            <!-- Schedule Form Collapse -->
+            <div class="collapse mb-4" id="collapseSessionForm">
+                <div class="mp-card p-4 border-primary border-opacity-50">
+                    <h4 class="h6 fw-bold text-light mb-3">Schedule a New Session</h4>
+                    <form method="post" action="/mentorships/1/sessions/add/">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="aEp0e2DeWzlERUm1dFJU4Yvgvoph3zA9gb8exMPCbfNNq1U0DGEVtbxbqevnMhhP">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label for="id_date" class="mp-form-label">Meeting Date & Time <span class="text-danger">*</span></label>
+                                <input type="datetime-local" name="date" class="form-control" required aria-describedby="id_date_helptext" id="id_date">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_meeting_link" class="mp-form-label">Meeting Link (Meet / Zoom / Teams)</label>
+                                <input type="url" name="meeting_link" class="form-control" placeholder="https://meet.google.com/abc-defg-hij or Zoom link" aria-describedby="id_meeting_link_helptext" id="id_meeting_link">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_notes" class="mp-form-label">Agenda & Topics</label>
+                            <textarea name="notes" cols="40" rows="3" class="form-control" placeholder="Meeting agenda, preparation checklist, or discussion topics..." id="id_notes">
+</textarea>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="mp-btn mp-btn-secondary mp-btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm">Cancel</button>
+                            <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm">Confirm Session</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sessions List -->
+            
+                <div class="vstack gap-3">
+                    
+                        <div class="mp-card p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-success border-opacity-50">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="mp-stat-icon mp-stat-icon-emerald" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                    <i class="bi bi-calendar-check-fill"></i>
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <h4 class="h6 fw-bold text-light mb-0">Tuesday, September 29, 2026 at 06:15 AM</h4>
+                                        
+                                            <span class="badge bg-success bg-opacity-25 text-success">Completed</span>
+                                        
+                                    </div>
+
+                                    
+                                        <p class="text-muted small mb-1">Orientation, query optimization, select_related vs prefetch_related, and indexing strategies.</p>
+                                    
+
+                                    
+                                        <div class="small d-flex align-items-center gap-2 mt-1">
+                                            <a href="https://meet.google.com/mp-sarah-alex" target="_blank" class="text-cyan text-decoration-none fw-medium">
+                                                <i class="bi bi-camera-video-fill me-1"></i> Join Meeting Room
+                                            </a>
+                                            <span class="text-secondary opacity-50">|</span>
+                                            <button type="button" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" onclick="navigator.clipboard.writeText('https://meet.google.com/mp-sarah-alex'); window.showToast('Meeting link copied to clipboard!', 'bi-clipboard-check text-cyan');" title="Copy Meeting Link to Clipboard">
+                                                <i class="bi bi-clipboard me-1"></i> Copy Link
+                                            </button>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="/mentorships/sessions/1/toggle/" class="mp-btn mp-btn-secondary mp-btn-sm">
+                                    
+                                        <i class="bi bi-arrow-counterclockwise"></i> Mark Incomplete
+                                    
+                                </a>
+                            </div>
+                        </div>
+                    
+                        <div class="mp-card p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 ">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="mp-stat-icon mp-stat-icon-cyan" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                    <i class="bi bi-calendar-event"></i>
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <h4 class="h6 fw-bold text-light mb-0">Friday, October 09, 2026 at 06:15 AM</h4>
+                                        
+                                            <span class="badge bg-info bg-opacity-25 text-info">Upcoming</span>
+                                        
+                                    </div>
+
+                                    
+                                        <p class="text-muted small mb-1">Building authenticated REST endpoints with serializers and writing automated unit tests.</p>
+                                    
+
+                                    
+                                        <div class="small d-flex align-items-center gap-2 mt-1">
+                                            <a href="https://meet.google.com/mp-sarah-alex" target="_blank" class="text-cyan text-decoration-none fw-medium">
+                                                <i class="bi bi-camera-video-fill me-1"></i> Join Meeting Room
+                                            </a>
+                                            <span class="text-secondary opacity-50">|</span>
+                                            <button type="button" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" onclick="navigator.clipboard.writeText('https://meet.google.com/mp-sarah-alex'); window.showToast('Meeting link copied to clipboard!', 'bi-clipboard-check text-cyan');" title="Copy Meeting Link to Clipboard">
+                                                <i class="bi bi-clipboard me-1"></i> Copy Link
+                                            </button>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="/mentorships/sessions/2/toggle/" class="mp-btn mp-btn-secondary mp-btn-sm">
+                                    
+                                        <i class="bi bi-check2-circle text-success"></i> Mark Complete
+                                    
+                                </a>
+                            </div>
+                        </div>
+                    
+                </div>
+            
+        </div>
+
+        <!-- TAB 3: MILESTONES -->
+        <div class="tab-pane fade" id="milestones" role="tabpanel" aria-labelledby="milestones-tab">
+            <div class="row g-4">
+                <div class="col-12 col-lg-8">
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h3 class="mp-card-title">
+                                <i class="bi bi-check2-square text-primary"></i> Learning Checklist & Goals
+                            </h3>
+                            <span class="badge bg-dark border border-secondary text-light font-monospace">
+                                2 of 3 Done
+                            </span>
+                        </div>
+
+                        
+                            <div class="vstack gap-2">
+                                
+                                    <div class="d-flex align-items-center justify-content-between p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <a href="/mentorships/milestones/1/toggle/" class="fs-4 text-decoration-none text-success">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                            </a>
+                                            <div>
+                                                <div class="fw-semibold text-decoration-line-through text-muted">
+                                                    Master Django ORM relationships and query optimization
+                                                </div>
+                                                
+                                                    <div class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                                        Completed on Sep 26, 2026 a.m.30 06:15 AM
+                                                    </div>
+                                                
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <a href="/mentorships/milestones/1/toggle/" class="mp-btn mp-btn-outline mp-btn-sm py-1 px-2">
+                                                Undo
+                                            </a>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="d-flex align-items-center justify-content-between p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <a href="/mentorships/milestones/2/toggle/" class="fs-4 text-decoration-none text-success">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                            </a>
+                                            <div>
+                                                <div class="fw-semibold text-decoration-line-through text-muted">
+                                                    Build clean API views and serialize complex model relations
+                                                </div>
+                                                
+                                                    <div class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                                        Completed on Oct 02, 2026 a.m.31 06:15 AM
+                                                    </div>
+                                                
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <a href="/mentorships/milestones/2/toggle/" class="mp-btn mp-btn-outline mp-btn-sm py-1 px-2">
+                                                Undo
+                                            </a>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="d-flex align-items-center justify-content-between p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <a href="/mentorships/milestones/3/toggle/" class="fs-4 text-decoration-none text-muted">
+                                                <i class="bi bi-circle"></i>
+                                            </a>
+                                            <div>
+                                                <div class="fw-semibold text-light">
+                                                    Implement authentication and write automated test cases
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <a href="/mentorships/milestones/3/toggle/" class="mp-btn mp-btn-outline mp-btn-sm py-1 px-2">
+                                                Done
+                                            </a>
+                                        </div>
+                                    </div>
+                                
+                            </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Add Milestone Form -->
+                <div class="col-12 col-lg-4">
+                    <div class="mp-card">
+                        <div class="mp-card-header">
+                            <h3 class="mp-card-title">
+                                <i class="bi bi-plus-circle text-success"></i> Add Milestone
+                            </h3>
+                        </div>
+                        <form method="post" action="/mentorships/1/milestones/add/">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="aEp0e2DeWzlERUm1dFJU4Yvgvoph3zA9gb8exMPCbfNNq1U0DGEVtbxbqevnMhhP">
+                            <div class="mb-3">
+                                <label for="id_title" class="mp-form-label">Milestone Title</label>
+                                <input type="text" name="title" class="form-control" placeholder="e.g. Build prototype and write unit tests" required id="id_title">
+                                <div class="mp-form-help">e.g. Master Docker container orchestration basics</div>
+                            </div>
+                            <button type="submit" class="mp-btn mp-btn-primary w-100 py-2">
+                                <i class="bi bi-plus-lg"></i> Add to Roadmap
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: RESOURCES -->
+        <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h5 fw-bold text-light mb-0">Shared Resources & Materials</h3>
+                <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm" aria-expanded="false" aria-controls="collapseResourceForm">
+                    <i class="bi bi-cloud-upload"></i> Share Resource
+                </button>
+            </div>
+
+            <!-- Share Resource Form Collapse -->
+            <div class="collapse mb-4" id="collapseResourceForm">
+                <div class="mp-card p-4 border-primary border-opacity-50">
+                    <h4 class="h6 fw-bold text-light mb-3">Attach Resource to Mentorship</h4>
+                    <form method="post" action="/mentorships/1/resources/add/" enctype="multipart/form-data">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="aEp0e2DeWzlERUm1dFJU4Yvgvoph3zA9gb8exMPCbfNNq1U0DGEVtbxbqevnMhhP">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label for="id_title_res" class="mp-form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control" placeholder="Resource Title" required id="id_title">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_type_res" class="mp-form-label">Type <span class="text-danger">*</span></label>
+                                <select name="type" class="form-select" id="id_type">
+  <option value="LINK">Web Link</option>
+
+  <option value="FILE">File Upload (&lt;=10MB)</option>
+
+  <option value="NOTE">Note / Markdown</option>
+
+</select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_content_res" class="mp-form-label">URL / Note Text</label>
+                            <textarea name="content" cols="40" rows="3" class="form-control" placeholder="Paste URL for web links, or write quick notes/markdown instructions" id="id_content">
+</textarea>
+                            <div class="mp-form-help">Enter URL for Web Link, or text content for a Note.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_file_res" class="mp-form-label">File Upload (PDF, PNG, JPG, TXT, DOCX &le; 10MB)</label>
+                            <input type="file" name="file" class="form-control" id="id_file">
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="mp-btn mp-btn-secondary mp-btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm">Cancel</button>
+                            <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm">Publish Resource</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resources Grid -->
+            
+                <div class="row g-3">
+                    
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="mp-card h-100 d-flex flex-column justify-content-between p-3">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-dark border border-secondary text-info font-monospace">
+                                            <i class="bi bi-link-45deg"></i> Link
+                                        </span>
+                                        <span class="small text-muted font-monospace" style="font-size: 0.72rem;">Oct 06</span>
+                                    </div>
+                                    <h4 class="h6 fw-bold text-light mb-2">Django Database Optimization Guide</h4>
+
+                                    
+                                        <p class="text-muted small mb-3 text-truncate">https://docs.djangoproject.com/en/5.2/topics/db/optimization/</p>
+                                    
+                                </div>
+
+                                <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted">by @sarah_backend</span>
+                                    
+                                        <a href="https://docs.djangoproject.com/en/5.2/topics/db/optimization/" target="_blank" class="mp-btn mp-btn-outline mp-btn-sm py-1">
+                                            Open <i class="bi bi-box-arrow-up-right small"></i>
+                                        </a>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="mp-card h-100 d-flex flex-column justify-content-between p-3">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-dark border border-secondary text-info font-monospace">
+                                            <i class="bi bi-sticky"></i> Note
+                                        </span>
+                                        <span class="small text-muted font-monospace" style="font-size: 0.72rem;">Oct 06</span>
+                                    </div>
+                                    <h4 class="h6 fw-bold text-light mb-2">Clean Architecture Blueprint</h4>
+
+                                    
+                                        <p class="text-muted small mb-3" style="white-space: pre-line;">Separate business logic into domain services and keep Django views lean and focused on HTTP orchestration.</p>
+                                    
+                                </div>
+
+                                <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted">by @sarah_backend</span>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+            
+        </div>
+
+        <!-- TAB 5: DISCUSSIONS -->
+        <div class="tab-pane fade" id="discussions" role="tabpanel" aria-labelledby="discussions-tab">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-9">
+                    
+                    <!-- New Message Input Card -->
+                    <div class="mp-card mb-4 p-3">
+                        <form method="post" action="/mentorships/1/discussions/add/">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="aEp0e2DeWzlERUm1dFJU4Yvgvoph3zA9gb8exMPCbfNNq1U0DGEVtbxbqevnMhhP">
+                            <div class="mb-3">
+                                <label for="id_text" class="mp-form-label">
+                                    <i class="bi bi-chat-left-text text-primary me-1"></i> Post an update or ask a question
+                                </label>
+                                <textarea name="text" cols="40" rows="3" class="form-control" placeholder="Write a message or update for your mentorship pair..." required id="id_text">
+</textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm px-4">
+                                    <i class="bi bi-send-fill"></i> Send Message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Discussion Posts Stream -->
+                    <div class="vstack gap-3">
+                        
+                            <div class="mp-card p-3 ">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="mp-user-avatar" style="width: 34px; height: 34px; font-size: 0.9rem;">
+                                            S
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-light">Sarah Connor</span>
+                                            
+                                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace" style="font-size: 0.65rem;">Mentor</span>
+                                            
+                                        </div>
+                                    </div>
+                                    <span class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                        Oct 06, 2026 a.m.31 06:15 AM
+                                    </span>
+                                </div>
+                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line;">
+                                    Welcome to our mentorship Alex! Looking forward to diving into backend scalability.
+                                </p>
+                            </div>
+                        
+                            <div class="mp-card p-3 border-primary border-opacity-50">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="mp-user-avatar" style="width: 34px; height: 34px; font-size: 0.9rem;">
+                                            A
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-light">Alex Rivera</span>
+                                            
+                                                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 font-monospace" style="font-size: 0.65rem;">Learner</span>
+                                            
+                                        </div>
+                                    </div>
+                                    <span class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                        Oct 06, 2026 a.m.31 06:15 AM
+                                    </span>
+                                </div>
+                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line;">
+                                    Thank you Sarah! I have set up the repository and started profiling ORM queries.
+                                </p>
+                            </div>
+                        
+                            <div class="mp-card p-3 ">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="mp-user-avatar" style="width: 34px; height: 34px; font-size: 0.9rem;">
+                                            S
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-light">Sarah Connor</span>
+                                            
+                                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace" style="font-size: 0.65rem;">Mentor</span>
+                                            
+                                        </div>
+                                    </div>
+                                    <span class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                        Oct 06, 2026 a.m.31 06:15 AM
+                                    </span>
+                                </div>
+                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line;">
+                                    Fantastic work completing the first two milestones ahead of schedule! Looking forward to our next meeting.
+                                </p>
+                            </div>
+                        
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: REVIEWS & RATINGS -->
+        <div class="tab-pane fade" id="feedback" role="tabpanel" aria-labelledby="feedback-tab">
+            <div class="row g-4">
+                <!-- Sidebar info / summary -->
+                <div class="col-12 col-lg-4">
+                    <div class="mp-card p-4 mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-star-fill text-warning fs-5"></i>
+                            <h4 class="h6 fw-bold text-light mb-0">Collaboration Feedback</h4>
+                        </div>
+                        <p class="small text-muted mb-3">
+                            Honest feedback improves mutual trust, unlocks platform badges (e.g. <em>Top Rated</em>), and drives reputation on the Leaderboard.
+                        </p>
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small text-muted">Feedback Received:</span>
+                                <span class="fw-bold text-light font-monospace">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">Status:</span>
+                                
+                                    <span class="badge bg-warning bg-opacity-20 text-warning">Pending Your Review</span>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main feedback stream and submission -->
+                <div class="col-12 col-lg-8">
+                    
+                    <!-- Feedback Submission Form Card (if not yet submitted) -->
+                    
+                        <div class="mp-card mb-4 p-4" style="border-color: rgba(245, 158, 11, 0.3);">
+                            <h5 class="fw-bold text-light mb-1">
+                                <i class="bi bi-pencil-square text-warning me-2"></i> Submit Your Review
+                            </h5>
+                            <p class="small text-muted mb-3">
+                                Share your rating and comments for 
+                                <strong>
+                                    Sarah Connor
+                                </strong>.
+                            </p>
+
+                            <form method="post" action="/feedback/1/">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="aEp0e2DeWzlERUm1dFJU4Yvgvoph3zA9gb8exMPCbfNNq1U0DGEVtbxbqevnMhhP">
+                                <div class="mb-3">
+                                    <label class="mp-form-label">
+                                        <i class="bi bi-star-half text-warning me-1"></i> Star Rating (1 to 5)
+                                    </label>
+                                    <select name="rating" class="form-select mp-form-control" required>
+                                        <option value="5" selected>5 Stars — Outstanding Collaboration</option>
+                                        <option value="4">4 Stars — Great Experience</option>
+                                        <option value="3">3 Stars — Good / Meets Expectations</option>
+                                        <option value="2">2 Stars — Fair / Needs Improvement</option>
+                                        <option value="1">1 Star — Poor Experience</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="mp-form-label">
+                                        <i class="bi bi-chat-heart text-primary me-1"></i> Review Comments
+                                    </label>
+                                    <textarea name="comment" class="form-control mp-form-control" rows="3" placeholder="Describe what went well, guidance received, or mutual achievements..." required></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm px-4">
+                                        <i class="bi bi-check-circle-fill"></i> Publish Feedback
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    
+
+                    <!-- Feedbacks List -->
+                    <div class="vstack gap-3">
+                        
+                            <div class="p-4 text-center text-muted">
+                                <i class="bi bi-stars fs-3 mb-2 d-block text-warning opacity-50"></i>
+                                <p class="mb-0">No feedback entries published yet for this mentorship.</p>
+                            </div>
+                        
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mp-footer">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center text-md-start">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-light">MentorPulse</span>
+                <span>— Skill-based Mentor Matching & Progress Tracking</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-dark border border-secondary text-secondary font-monospace" style="font-size: 0.72rem;">
+                    <i class="bi bi-hdd-network"></i> Local SQLite Build
+                </span>
+                <span class="small text-muted">&copy; 2026 MentorPulse</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+        <div id="mpToast" class="toast align-items-center text-bg-dark border border-primary border-opacity-50 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" id="mpToastBody">
+                    <i class="bi bi-check-circle-fill text-success fs-5" id="mpToastIcon"></i>
+                    <span id="mpToastText" class="fw-medium small">Action completed successfully.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.showToast = function(message, iconClass = 'bi-check-circle-fill text-success') {
+            const toastEl = document.getElementById('mpToast');
+            if (!toastEl) return;
+            document.getElementById('mpToastText').innerText = message;
+            const iconEl = document.getElementById('mpToastIcon');
+            iconEl.className = 'bi fs-5 ' + iconClass;
+            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        };
+    </script>
+    
+</body>
+</html>
+

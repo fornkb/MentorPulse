@@ -4,92 +4,20 @@
 {% block title %}Mentorship Workspace — {{ mentorship.learner.username }} & {{ mentorship.mentor.username }} — MentorPulse{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container mp-page">
 
-    <!-- Top Navigation & Back link -->
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <a href="{% url 'mentorship_list' %}" class="mp-btn mp-btn-secondary mp-btn-sm">
-            <i class="bi bi-arrow-left"></i> Back to Mentorship Central
-        </a>
-        <div class="d-flex align-items-center gap-2">
-            {% if mentorship.is_active %}
-                <form method="post" action="{% url 'mentorship_complete' mentorship.id %}" onsubmit="return confirm('Mark this mentorship as completed? This will finalize milestones and unlock your credential certificate.');">
-                    {% csrf_token %}
-                    <button type="submit" class="mp-btn mp-btn-accent mp-btn-sm">
-                        <i class="bi bi-check2-all"></i> Finalize & Complete Mentorship
-                    </button>
-                </form>
-            {% elif mentorship.is_completed %}
-                <a href="{% url 'mentorship_certificate' mentorship.id %}" class="mp-btn mp-btn-primary mp-btn-sm">
-                    <i class="bi bi-award-fill text-warning"></i> View Certificate
-                </a>
-            {% endif %}
-        </div>
+    <div class="mp-workspace-top">
+        <a href="{% url 'mentorship_list' %}" class="mp-btn-link"><i class="bi bi-arrow-left" aria-hidden="true"></i>All mentorships</a>
+        {% if mentorship.is_active and is_mentor %}
+            <form method="post" action="{% url 'mentorship_complete' mentorship.id %}" onsubmit="return confirm('Approve completion and issue the certificate? Every milestone and session must already be finished.');">{% csrf_token %}<button type="submit" {% if completion_errors %}disabled title="Finish the remaining milestones and sessions first"{% endif %} class="mp-btn mp-btn-primary mp-btn-sm">Complete mentorship</button></form>
+        {% elif mentorship.is_completed %}<a href="{% url 'mentorship_certificate' mentorship.id %}" class="mp-btn mp-btn-primary mp-btn-sm">View certificate <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>{% endif %}
     </div>
-
-    <!-- Workspace Master Header Card -->
-    <div class="mp-card mp-card-glass mb-4 p-4 p-md-5 border-primary border-opacity-25">
-        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
-            
-            <!-- Participants summary -->
-            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-4">
-                
-                <!-- Learner Profile Bubble -->
-                <div class="d-flex align-items-center gap-3">
-                    <div class="mp-user-avatar shadow" style="width: 54px; height: 54px; font-size: 1.4rem;">
-                        {{ mentorship.learner.username|slice:":1"|upper }}
-                    </div>
-                    <div>
-                        <div class="small text-muted font-monospace" style="font-size: 0.72rem;">LEARNER</div>
-                        <h2 class="h6 fw-bold text-light mb-0">{{ mentorship.learner.get_full_name|default:mentorship.learner.username }}</h2>
-                        <span class="badge bg-secondary font-monospace" style="font-size: 0.7rem;">@{{ mentorship.learner.username }}</span>
-                    </div>
-                </div>
-
-                <div class="d-none d-sm-block text-secondary fs-4"><i class="bi bi-arrow-left-right"></i></div>
-
-                <!-- Mentor Profile Bubble -->
-                <div class="d-flex align-items-center gap-3">
-                    <div class="mp-user-avatar shadow" style="width: 54px; height: 54px; font-size: 1.4rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">
-                        {{ mentorship.mentor.username|slice:":1"|upper }}
-                    </div>
-                    <div>
-                        <div class="small text-muted font-monospace" style="font-size: 0.72rem;">MENTOR</div>
-                        <h2 class="h6 fw-bold text-light mb-0">{{ mentorship.mentor.get_full_name|default:mentorship.mentor.username }}</h2>
-                        <span class="badge bg-secondary font-monospace" style="font-size: 0.7rem;">@{{ mentorship.mentor.username }}</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Status & Overall Progress Widget -->
-            <div class="text-lg-end" style="min-width: 260px;">
-                <div class="d-flex align-items-center justify-content-lg-end gap-2 mb-2">
-                    {% if mentorship.is_active %}
-                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 fs-6 px-3 py-1">
-                            <i class="bi bi-broadcast"></i> Active Workspace
-                        </span>
-                    {% elif mentorship.is_completed %}
-                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 fs-6 px-3 py-1">
-                            <i class="bi bi-award-fill"></i> Completed
-                        </span>
-                    {% else %}
-                        <span class="badge bg-secondary fs-6 px-3 py-1">{{ mentorship.status }}</span>
-                    {% endif %}
-                </div>
-
-                <div class="d-flex justify-content-between justify-content-lg-end align-items-center gap-3 small text-muted font-monospace mb-1">
-                    <span>PROGRESS</span>
-                    <span class="text-light fw-bold fs-6">{{ progress.completion_pct|floatformat:0 }}%</span>
-                </div>
-                <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.08);">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ progress.completion_pct }}%;" aria-valuenow="{{ progress.completion_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
+    <header class="mp-workspace-heading">
+        <div><span class="mp-eyebrow">Mentorship</span><h1>Learning workspace</h1><p class="text-muted mb-0">{{ mentorship.learner.get_full_name|default:mentorship.learner.username }} <span class="mx-1">with</span> {{ mentorship.mentor.get_full_name|default:mentorship.mentor.username }}</p></div>
+        <div class="mp-workspace-progress"><div class="d-flex justify-content-between gap-4 mb-2"><span class="mp-badge {% if mentorship.is_active %}mp-status-active{% endif %}">{{ mentorship.get_status_display }}</span><span class="mp-quiet-meta">{{ progress.completion_pct|floatformat:0 }}% complete</span></div><progress value="{{ progress.completion_pct }}" max="100" aria-label="Mentorship completion"></progress></div>
+    </header>
+    {% if not editable %}<div class="alert alert-info mb-4">This workspace is read-only. Your history and certificate stay available.</div>{% endif %}
+    {% if completion_errors %}<details class="mp-workspace-readiness"><summary>What’s needed to complete this mentorship?</summary><ul>{% for error in completion_errors %}<li>{{ error }}</li>{% endfor %}</ul></details>{% endif %}
     <!-- Workspace Tabs Navigation -->
     <ul class="nav nav-pills mb-4 gap-2 border-bottom border-secondary border-opacity-25 pb-3" id="workspaceTabs" role="tablist">
         <li class="nav-item" role="presentation">
@@ -123,7 +51,7 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-semibold" id="feedback-tab" data-bs-toggle="pill" data-bs-target="#feedback" type="button" role="tab" aria-controls="feedback" aria-selected="false">
-                <i class="bi bi-star-fill text-warning me-1"></i> Reviews & Ratings
+                <i class="bi bi-star-fill text-warning me-1"></i> Reviews
                 <span class="badge bg-dark border border-secondary text-secondary ms-1">{{ feedbacks.count }}</span>
             </button>
         </li>
@@ -140,10 +68,10 @@
                     <div class="mp-card mb-4">
                         <div class="mp-card-header">
                             <h3 class="mp-card-title">
-                                <i class="bi bi-bullseye text-danger"></i> Target Learning Objectives
+                                <i class="bi bi-bullseye text-danger"></i> Learning goals
                             </h3>
                         </div>
-                        <p class="text-light" style="line-height: 1.8; white-space: pre-line; font-size: 0.95rem;">
+                        <p class="text-light" style="line-height: 1.8; white-space: pre-line; font-size: 0.95rem">
                             {{ mentorship.goals }}
                         </p>
                     </div>
@@ -152,7 +80,7 @@
                     <div class="mp-card">
                         <div class="mp-card-header">
                             <h3 class="mp-card-title">
-                                <i class="bi bi-list-check text-primary"></i> Roadmap Milestones Snapshot
+                                <i class="bi bi-list-check text-primary"></i> Your roadmap
                             </h3>
                             <span class="small text-muted font-monospace">{{ completed_milestones }}/{{ milestones.count }} Completed</span>
                         </div>
@@ -168,7 +96,7 @@
                                             </span>
                                         </div>
                                         {% if ms.completed_at %}
-                                            <span class="small text-muted font-monospace" style="font-size: 0.72rem;">Done {{ ms.completed_at|date:"M d" }}</span>
+                                            <span class="small text-muted font-monospace" style="font-size: 0.72rem">Done {{ ms.completed_at|date:"M d" }}</span>
                                         {% endif %}
                                     </div>
                                 {% endfor %}
@@ -215,18 +143,18 @@
                     <div class="mp-card">
                         <div class="mp-card-header">
                             <h3 class="mp-card-title">
-                                <i class="bi bi-lightning text-amber"></i> Quick Actions
+                                <i class="bi bi-lightning text-amber"></i> Quick actions
                             </h3>
                         </div>
                         <div class="vstack gap-2">
-                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('sessions-tab').click(); document.getElementById('collapseSessionForm').classList.add('show');">
-                                <i class="bi bi-calendar-plus text-cyan"></i> Schedule New Meeting
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('sessions-tab').click(); document.getElementById('collapseSessionForm').classList.add('show');" {% if not editable %}disabled{% endif %}>
+                                <i class="bi bi-calendar-plus text-cyan"></i> Schedule a meeting
                             </button>
-                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('milestones-tab').click();">
-                                <i class="bi bi-plus-circle text-primary"></i> Add Milestone Task
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('milestones-tab').click();" {% if not editable %}disabled{% endif %}>
+                                <i class="bi bi-plus-circle text-primary"></i> Add a milestone
                             </button>
-                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('resources-tab').click(); document.getElementById('collapseResourceForm').classList.add('show');">
-                                <i class="bi bi-upload text-emerald"></i> Share Document or Link
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm w-100 justify-content-start" onclick="document.getElementById('resources-tab').click(); document.getElementById('collapseResourceForm').classList.add('show');" {% if not editable %}disabled{% endif %}>
+                                <i class="bi bi-upload text-emerald"></i> Share a resource
                             </button>
                         </div>
                     </div>
@@ -237,9 +165,9 @@
         <!-- TAB 2: SESSIONS -->
         <div class="tab-pane fade" id="sessions" role="tabpanel" aria-labelledby="sessions-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="h5 fw-bold text-light mb-0">Mentorship Sessions</h3>
-                <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm" aria-expanded="false" aria-controls="collapseSessionForm">
-                    <i class="bi bi-calendar-plus"></i> Schedule New Session
+                <h3 class="h5 fw-bold text-light mb-0">Sessions</h3>
+                <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm" aria-expanded="false" aria-controls="collapseSessionForm" {% if not editable %}disabled{% endif %}>
+                    <i class="bi bi-calendar-plus"></i> Schedule a session
                 </button>
             </div>
 
@@ -247,27 +175,27 @@
             <div class="collapse mb-4" id="collapseSessionForm">
                 <div class="mp-card p-4 border-primary border-opacity-50">
                     <h4 class="h6 fw-bold text-light mb-3">Schedule a New Session</h4>
-                    <form method="post" action="{% url 'session_add' mentorship.id %}">
+                    {% if editable %}<form method="post" action="{% url 'session_add' mentorship.id %}">
                         {% csrf_token %}
                         <div class="row g-3 mb-3">
                             <div class="col-12 col-md-6">
-                                <label for="id_date" class="mp-form-label">Meeting Date & Time <span class="text-danger">*</span></label>
-                                {{ session_form.date }}
+                                <label for="{{ session_form.date.id_for_label }}" class="mp-form-label">Meeting Date & Time <span class="text-danger">*</span></label>
+                                {{ session_form.date }}<label class="mp-form-label mt-2" for="{{ session_form.duration_minutes.id_for_label }}">Duration (minutes)</label>{{ session_form.duration_minutes }}
                             </div>
                             <div class="col-12 col-md-6">
-                                <label for="id_meeting_link" class="mp-form-label">Meeting Link (Meet / Zoom / Teams)</label>
+                                <label for="{{ session_form.meeting_link.id_for_label }}" class="mp-form-label">Meeting Link (Meet / Zoom / Teams)</label>
                                 {{ session_form.meeting_link }}
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="id_notes" class="mp-form-label">Agenda & Topics</label>
+                            <label for="{{ session_form.notes.id_for_label }}" class="mp-form-label">Agenda & Topics</label>
                             {{ session_form.notes }}
                         </div>
                         <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="mp-btn mp-btn-secondary mp-btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm">Cancel</button>
+                            <button type="button" class="mp-btn mp-btn-secondary mp-btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm" {% if not editable %}disabled{% endif %}>Cancel</button>
                             <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm">Confirm Session</button>
                         </div>
-                    </form>
+                    </form>{% endif %}
                 </div>
             </div>
 
@@ -277,45 +205,45 @@
                     {% for s in sessions %}
                         <div class="mp-card p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 {% if s.is_completed %}border-success border-opacity-50{% endif %}">
                             <div class="d-flex align-items-start gap-3">
-                                <div class="mp-stat-icon {% if s.is_completed %}mp-stat-icon-emerald{% else %}mp-stat-icon-cyan{% endif %}" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                <div class="mp-stat-icon {% if s.is_completed %}mp-stat-icon-emerald{% else %}mp-stat-icon-cyan{% endif %}" style="width: 44px; height: 44px; font-size: 1.25rem">
                                     <i class="bi {% if s.is_completed %}bi-calendar-check-fill{% else %}bi-calendar-event{% endif %}"></i>
                                 </div>
                                 <div>
                                     <div class="d-flex align-items-center gap-2 mb-1">
                                         <h4 class="h6 fw-bold text-light mb-0">{{ s.date|date:"l, F d, Y" }} at {{ s.date|date:"h:i A" }}</h4>
-                                        {% if s.is_completed %}
+                                        {% if s.is_cancelled %}<span class="badge bg-secondary">Cancelled</span>{% elif s.is_completed %}
                                             <span class="badge bg-success bg-opacity-25 text-success">Completed</span>
                                         {% else %}
-                                            <span class="badge bg-info bg-opacity-25 text-info">Upcoming</span>
+                                            <span class="badge bg-info bg-opacity-25 text-info">{% if s.has_ended %}Awaiting completion{% else %}Upcoming{% endif %}</span>
                                         {% endif %}
                                     </div>
 
+                                    <div class="small text-muted">{{ s.duration_minutes }} minutes</div>
                                     {% if s.notes %}
                                         <p class="text-muted small mb-1">{{ s.notes }}</p>
                                     {% endif %}
 
                                     {% if s.meeting_link %}
                                         <div class="small d-flex align-items-center gap-2 mt-1">
-                                            <a href="{{ s.meeting_link }}" target="_blank" class="text-cyan text-decoration-none fw-medium">
-                                                <i class="bi bi-camera-video-fill me-1"></i> Join Meeting Room
+                                            <a href="{{ s.meeting_link }}" target="_blank" rel="noopener noreferrer" class="text-cyan text-decoration-none fw-medium">
+                                                <i class="bi bi-camera-video-fill me-1"></i> Join meeting
                                             </a>
                                             <span class="text-secondary opacity-50">|</span>
                                             <button type="button" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" onclick="navigator.clipboard.writeText('{{ s.meeting_link }}'); window.showToast('Meeting link copied to clipboard!', 'bi-clipboard-check text-cyan');" title="Copy Meeting Link to Clipboard">
-                                                <i class="bi bi-clipboard me-1"></i> Copy Link
+                                                <i class="bi bi-clipboard me-1"></i> Copy link
                                             </button>
                                         </div>
                                     {% endif %}
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center gap-2">
-                                <a href="{% url 'session_toggle' s.id %}" class="mp-btn mp-btn-secondary mp-btn-sm">
-                                    {% if s.is_completed %}
-                                        <i class="bi bi-arrow-counterclockwise"></i> Mark Incomplete
-                                    {% else %}
-                                        <i class="bi bi-check2-circle text-success"></i> Mark Complete
-                                    {% endif %}
-                                </a>
+                            <div class="mp-session-actions">
+                                <a href="{% url 'session_calendar' s.id %}" class="mp-btn mp-btn-secondary mp-btn-sm">Calendar</a>
+                                {% if editable and not s.is_completed and not s.is_cancelled %}
+                                <a href="{% url 'session_edit' s.id %}" class="mp-btn mp-btn-secondary mp-btn-sm">Reschedule</a>
+                                <form method="post" action="{% url 'session_cancel' s.id %}" onsubmit="return confirm('Cancel this session?');">{% csrf_token %}<button class="mp-btn mp-btn-secondary mp-btn-sm">Cancel</button></form>
+                                {% if is_mentor and s.has_ended %}<form method="post" action="{% url 'session_toggle' s.id %}">{% csrf_token %}<button class="mp-btn mp-btn-primary mp-btn-sm">Confirm completed</button></form>{% endif %}
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
@@ -324,7 +252,7 @@
                 <div class="mp-card p-5 text-center text-muted">
                     <i class="bi bi-calendar-x fs-2 mb-2 d-block text-secondary"></i>
                     <p class="mb-2">No sessions scheduled yet.</p>
-                    <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm">
+                    <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionForm" {% if not editable %}disabled{% endif %}>
                         Schedule Your First Meeting
                     </button>
                 </div>
@@ -338,7 +266,7 @@
                     <div class="mp-card">
                         <div class="mp-card-header">
                             <h3 class="mp-card-title">
-                                <i class="bi bi-check2-square text-primary"></i> Learning Checklist & Goals
+                                <i class="bi bi-check2-square text-primary"></i> Learning milestones
                             </h3>
                             <span class="badge bg-dark border border-secondary text-light font-monospace">
                                 {{ completed_milestones }} of {{ milestones.count }} Done
@@ -350,25 +278,26 @@
                                 {% for ms in milestones %}
                                     <div class="d-flex align-items-center justify-content-between p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25">
                                         <div class="d-flex align-items-center gap-3">
-                                            <a href="{% url 'milestone_toggle' ms.id %}" class="fs-4 text-decoration-none {% if ms.is_completed %}text-success{% else %}text-muted{% endif %}">
+                                            {% if editable %}<form method="post" action="{% url 'milestone_toggle' ms.id %}" class="d-inline">{% csrf_token %}<button type="submit" aria-label="Update milestone"  class="fs-4 text-decoration-none {% if ms.is_completed %}text-success{% else %}text-muted{% endif %}">
                                                 <i class="bi {% if ms.is_completed %}bi-check-circle-fill{% else %}bi-circle{% endif %}"></i>
-                                            </a>
+                                            </button></form>{% endif %}
                                             <div>
                                                 <div class="fw-semibold {% if ms.is_completed %}text-decoration-line-through text-muted{% else %}text-light{% endif %}">
-                                                    {{ ms.title }}
+{{ ms.title }}{% if ms.due_date %}<div class="text-muted small">Due {{ ms.due_date|date:"M d, Y" }}</div>{% endif %}
                                                 </div>
                                                 {% if ms.completed_at %}
-                                                    <div class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                                    <div class="small text-muted font-monospace" style="font-size: 0.72rem">
                                                         Completed on {{ ms.completed_at|date:"M d, Y at h:i A" }}
                                                     </div>
                                                 {% endif %}
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <a href="{% url 'milestone_toggle' ms.id %}" class="mp-btn mp-btn-outline mp-btn-sm py-1 px-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if editable %}<a class="mp-btn mp-btn-secondary mp-btn-sm" href="{% url 'milestone_edit' ms.id %}">Edit</a>{% endif %}
+                                            {% if editable %}<form method="post" action="{% url 'milestone_toggle' ms.id %}" class="d-inline">{% csrf_token %}<button type="submit" aria-label="Update milestone"  class="mp-btn mp-btn-outline mp-btn-sm py-1 px-2">
                                                 {% if ms.is_completed %}Undo{% else %}Done{% endif %}
-                                            </a>
+                                            </button></form>{% endif %}
                                         </div>
                                     </div>
                                 {% endfor %}
@@ -390,17 +319,17 @@
                                 <i class="bi bi-plus-circle text-success"></i> Add Milestone
                             </h3>
                         </div>
-                        <form method="post" action="{% url 'milestone_add' mentorship.id %}">
+                        {% if editable %}<form method="post" action="{% url 'milestone_add' mentorship.id %}">
                             {% csrf_token %}
                             <div class="mb-3">
-                                <label for="id_title" class="mp-form-label">Milestone Title</label>
-                                {{ milestone_form.title }}
+                                <label for="{{ milestone_form.title.id_for_label }}" class="mp-form-label">Milestone Title</label>
+                                {{ milestone_form.title }}<label for="{{ milestone_form.due_date.id_for_label }}" class="mp-form-label mt-2">Deadline (optional)</label>{{ milestone_form.due_date }}
                                 <div class="mp-form-help">e.g. Master Docker container orchestration basics</div>
                             </div>
                             <button type="submit" class="mp-btn mp-btn-primary w-100 py-2">
                                 <i class="bi bi-plus-lg"></i> Add to Roadmap
                             </button>
-                        </form>
+                        </form>{% endif %}
                     </div>
                 </div>
             </div>
@@ -410,7 +339,7 @@
         <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="h5 fw-bold text-light mb-0">Shared Resources & Materials</h3>
-                <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm" aria-expanded="false" aria-controls="collapseResourceForm">
+                <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm" aria-expanded="false" aria-controls="collapseResourceForm" {% if not editable %}disabled{% endif %}>
                     <i class="bi bi-cloud-upload"></i> Share Resource
                 </button>
             </div>
@@ -419,35 +348,35 @@
             <div class="collapse mb-4" id="collapseResourceForm">
                 <div class="mp-card p-4 border-primary border-opacity-50">
                     <h4 class="h6 fw-bold text-light mb-3">Attach Resource to Mentorship</h4>
-                    <form method="post" action="{% url 'resource_add' mentorship.id %}" enctype="multipart/form-data">
+                    {% if editable %}<form method="post" action="{% url 'resource_add' mentorship.id %}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row g-3 mb-3">
                             <div class="col-12 col-md-6">
-                                <label for="id_title_res" class="mp-form-label">Title <span class="text-danger">*</span></label>
+                                <label for="{{ resource_form.title_res.id_for_label }}" class="mp-form-label">Title <span class="text-danger">*</span></label>
                                 {{ resource_form.title }}
                             </div>
                             <div class="col-12 col-md-6">
-                                <label for="id_type_res" class="mp-form-label">Type <span class="text-danger">*</span></label>
+                                <label for="{{ resource_form.type_res.id_for_label }}" class="mp-form-label">Type <span class="text-danger">*</span></label>
                                 {{ resource_form.type }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="id_content_res" class="mp-form-label">URL / Note Text</label>
+                            <label for="{{ resource_form.content_res.id_for_label }}" class="mp-form-label">URL / Note Text</label>
                             {{ resource_form.content }}
                             <div class="mp-form-help">Enter URL for Web Link, or text content for a Note.</div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="id_file_res" class="mp-form-label">File Upload (PDF, PNG, JPG, TXT, DOCX &le; 10MB)</label>
+                            <label for="{{ resource_form.file_res.id_for_label }}" class="mp-form-label">File Upload (PDF, PNG, JPG, TXT, DOCX &le; 10MB)</label>
                             {{ resource_form.file }}
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="mp-btn mp-btn-secondary mp-btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm">Cancel</button>
+                            <button type="button" class="mp-btn mp-btn-secondary mp-btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm" {% if not editable %}disabled{% endif %}>Cancel</button>
                             <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm">Publish Resource</button>
                         </div>
-                    </form>
+                    </form>{% endif %}
                 </div>
             </div>
 
@@ -462,12 +391,12 @@
                                         <span class="badge bg-dark border border-secondary text-info font-monospace">
                                             {% if r.type == 'LINK' %}<i class="bi bi-link-45deg"></i> Link{% elif r.type == 'FILE' %}<i class="bi bi-file-earmark-arrow-down"></i> File{% else %}<i class="bi bi-sticky"></i> Note{% endif %}
                                         </span>
-                                        <span class="small text-muted font-monospace" style="font-size: 0.72rem;">{{ r.created_at|date:"M d" }}</span>
+                                        <span class="small text-muted font-monospace" style="font-size: 0.72rem">{{ r.created_at|date:"M d" }}</span>
                                     </div>
                                     <h4 class="h6 fw-bold text-light mb-2">{{ r.title }}</h4>
 
                                     {% if r.type == 'NOTE' %}
-                                        <p class="text-muted small mb-3" style="white-space: pre-line;">{{ r.content }}</p>
+                                        <p class="text-muted small mb-3" style="white-space: pre-line">{{ r.content }}</p>
                                     {% elif r.type == 'LINK' %}
                                         <p class="text-muted small mb-3 text-truncate">{{ r.content }}</p>
                                     {% elif r.type == 'FILE' and r.file %}
@@ -480,11 +409,11 @@
                                 <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
                                     <span class="small text-muted">by @{{ r.uploaded_by.username }}</span>
                                     {% if r.type == 'LINK' and r.content %}
-                                        <a href="{{ r.content }}" target="_blank" class="mp-btn mp-btn-outline mp-btn-sm py-1">
+                                        <a href="{{ r.content }}" target="_blank" rel="noopener noreferrer" class="mp-btn mp-btn-outline mp-btn-sm py-1">
                                             Open <i class="bi bi-box-arrow-up-right small"></i>
                                         </a>
                                     {% elif r.type == 'FILE' and r.file %}
-                                        <a href="{{ r.file.url }}" download class="mp-btn mp-btn-primary mp-btn-sm py-1">
+                                        <a href="{% url 'resource_download' r.id %}" download class="mp-btn mp-btn-primary mp-btn-sm py-1">
                                             <i class="bi bi-download"></i> Download
                                         </a>
                                     {% endif %}
@@ -497,7 +426,7 @@
                 <div class="mp-card p-5 text-center text-muted">
                     <i class="bi bi-folder-x fs-2 mb-2 d-block text-secondary"></i>
                     <p class="mb-2">No learning resources shared yet.</p>
-                    <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm">
+                    <button class="mp-btn mp-btn-primary mp-btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResourceForm" {% if not editable %}disabled{% endif %}>
                         Share First Resource
                     </button>
                 </div>
@@ -511,10 +440,10 @@
                     
                     <!-- New Message Input Card -->
                     <div class="mp-card mb-4 p-3">
-                        <form method="post" action="{% url 'discussion_post' mentorship.id %}">
+                        {% if editable %}<form method="post" action="{% url 'discussion_post' mentorship.id %}">
                             {% csrf_token %}
                             <div class="mb-3">
-                                <label for="id_text" class="mp-form-label">
+                                <label for="{{ discussion_form.text.id_for_label }}" class="mp-form-label">
                                     <i class="bi bi-chat-left-text text-primary me-1"></i> Post an update or ask a question
                                 </label>
                                 {{ discussion_form.text }}
@@ -524,7 +453,7 @@
                                     <i class="bi bi-send-fill"></i> Send Message
                                 </button>
                             </div>
-                        </form>
+                        </form>{% endif %}
                     </div>
 
                     <!-- Discussion Posts Stream -->
@@ -533,23 +462,23 @@
                             <div class="mp-card p-3 {% if post.author == request.user %}border-primary border-opacity-50{% endif %}">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="mp-user-avatar" style="width: 34px; height: 34px; font-size: 0.9rem;">
+                                        <div class="mp-user-avatar" style="width: 34px; height: 34px; font-size: 0.9rem">
                                             {{ post.author.username|slice:":1"|upper }}
                                         </div>
                                         <div>
                                             <span class="fw-bold text-light">{{ post.author.get_full_name|default:post.author.username }}</span>
                                             {% if post.author == mentorship.mentor %}
-                                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace" style="font-size: 0.65rem;">Mentor</span>
+                                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace" style="font-size: 0.65rem">Mentor</span>
                                             {% else %}
-                                                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 font-monospace" style="font-size: 0.65rem;">Learner</span>
+                                                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 font-monospace" style="font-size: 0.65rem">Learner</span>
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <span class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                    <span class="small text-muted font-monospace" style="font-size: 0.72rem">
                                         {{ post.created_at|date:"M d, Y at h:i A" }}
                                     </span>
                                 </div>
-                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line;">
+                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line">
                                     {{ post.text }}
                                 </p>
                             </div>
@@ -578,7 +507,7 @@
                         <p class="small text-muted mb-3">
                             Honest feedback improves mutual trust, unlocks platform badges (e.g. <em>Top Rated</em>), and drives reputation on the Leaderboard.
                         </p>
-                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                        <div class="p-3 rounded" style="border: 1px solid var(--border-subtle)">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="small text-muted">Feedback Received:</span>
                                 <span class="fw-bold text-light font-monospace">{{ feedbacks|length }}</span>
@@ -599,8 +528,8 @@
                 <div class="col-12 col-lg-8">
                     
                     <!-- Feedback Submission Form Card (if not yet submitted) -->
-                    {% if not has_given_feedback %}
-                        <div class="mp-card mb-4 p-4" style="border-color: rgba(245, 158, 11, 0.3);">
+                    {% if not has_given_feedback and can_review %}
+                        <div class="mp-card mb-4 p-4">
                             <h5 class="fw-bold text-light mb-1">
                                 <i class="bi bi-pencil-square text-warning me-2"></i> Submit Your Review
                             </h5>
@@ -614,10 +543,10 @@
                             <form method="post" action="{% url 'feedback_submit' mentorship.id %}">
                                 {% csrf_token %}
                                 <div class="mb-3">
-                                    <label class="mp-form-label">
+                                    <label class="mp-form-label" for="feedback_rating">
                                         <i class="bi bi-star-half text-warning me-1"></i> Star Rating (1 to 5)
                                     </label>
-                                    <select name="rating" class="form-select mp-form-control" required>
+                                    <select id="feedback_rating" name="rating" class="form-select mp-form-control" required>
                                         <option value="5" selected>5 Stars — Outstanding Collaboration</option>
                                         <option value="4">4 Stars — Great Experience</option>
                                         <option value="3">3 Stars — Good / Meets Expectations</option>
@@ -626,10 +555,10 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="mp-form-label">
+                                    <label class="mp-form-label" for="feedback_comment">
                                         <i class="bi bi-chat-heart text-primary me-1"></i> Review Comments
                                     </label>
-                                    <textarea name="comment" class="form-control mp-form-control" rows="3" placeholder="Describe what went well, guidance received, or mutual achievements..." required></textarea>
+                                    <textarea id="feedback_comment" name="comment" class="form-control mp-form-control" rows="3" placeholder="Describe what went well, guidance received, or mutual achievements..." required></textarea>
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" class="mp-btn mp-btn-primary mp-btn-sm px-4">
@@ -638,7 +567,7 @@
                                 </div>
                             </form>
                         </div>
-                    {% else %}
+                    {% elif has_given_feedback %}
                         <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
                             <i class="bi bi-check-circle-fill fs-5"></i>
                             <div>You have already submitted your review for this mentorship. Thank you!</div>
@@ -651,15 +580,15 @@
                             <div class="mp-card p-3">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="mp-user-avatar" style="width: 36px; height: 36px; font-size: 0.95rem;">
+                                        <div class="mp-user-avatar" style="width: 36px; height: 36px; font-size: 0.95rem">
                                             {{ fb.given_by.username|slice:":1"|upper }}
                                         </div>
                                         <div>
                                             <span class="fw-bold text-light">{{ fb.given_by.get_full_name|default:fb.given_by.username }}</span>
                                             {% if fb.given_by == mentorship.mentor %}
-                                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace ms-1" style="font-size: 0.65rem;">Mentor</span>
+                                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 font-monospace ms-1" style="font-size: 0.65rem">Mentor</span>
                                             {% else %}
-                                                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 font-monospace ms-1" style="font-size: 0.65rem;">Learner</span>
+                                                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 font-monospace ms-1" style="font-size: 0.65rem">Learner</span>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -673,12 +602,12 @@
                                                 {% endif %}
                                             {% endfor %}
                                         </div>
-                                        <span class="small text-muted font-monospace" style="font-size: 0.72rem;">
+                                        <span class="small text-muted font-monospace" style="font-size: 0.72rem">
                                             {{ fb.created_at|date:"M d, Y" }}
                                         </span>
                                     </div>
                                 </div>
-                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line;">
+                                <p class="text-light small mb-0 ps-4" style="line-height: 1.6; white-space: pre-line">
                                     {{ fb.comment }}
                                 </p>
                             </div>
@@ -697,4 +626,19 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (() => {
+        const buttons = [...document.querySelectorAll('#workspaceTabs [data-bs-toggle="pill"]')];
+        const activateHash = () => {
+            const button = buttons.find(button => button.dataset.bsTarget === window.location.hash);
+            if (button && window.bootstrap) bootstrap.Tab.getOrCreateInstance(button).show();
+        };
+        activateHash();
+        window.addEventListener('hashchange', activateHash);
+        buttons.forEach(button => button.addEventListener('shown.bs.tab', () => history.replaceState(null, '', button.dataset.bsTarget)));
+    })();
+</script>
 {% endblock %}

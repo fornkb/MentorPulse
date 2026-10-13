@@ -7,6 +7,7 @@ from mentorship.models import Mentorship
 from .models import Credit, CreditTransaction, Feedback, Badge, UserBadge, LeaderboardEntry
 from .forms import FeedbackForm
 from .services import CreditService, FeedbackService, BadgeService, LeaderboardService
+from django.db import IntegrityError
 
 
 @login_required
@@ -95,7 +96,7 @@ def badges_view(request):
 def feedback_submit_view(request, mentorship_id):
     """Submit rating and review for collaboration."""
     mentorship = get_object_or_404(Mentorship, id=mentorship_id)
-    if not mentorship.can_access(request.user):
+    if request.user.pk not in [mentorship.mentor_id, mentorship.learner_id] or mentorship.status not in ['ACTIVE', 'COMPLETED']:
         return HttpResponseForbidden()
 
     # Prevent duplicate reviews from the same participant
@@ -108,14 +109,13 @@ def feedback_submit_view(request, mentorship_id):
         if form.is_valid():
             rating = int(form.cleaned_data['rating'])
             comment = form.cleaned_data['comment']
-            FeedbackService.submit_feedback(
-                mentorship=mentorship,
-                given_by=request.user,
-                rating=rating,
-                comment=comment
-            )
-            messages.success(request, "Thank you for your rating! Your review has been published and reputation scores updated.")
+            try:
+                FeedbackService.submit_feedback(mentorship=mentorship, given_by=request.user, rating=rating, comment=comment)
+            except (ValueError, IntegrityError):
+                messages.warning(request, 'A review has already been submitted. Refresh your workspace.')
+            else:
+                messages.success(request, "Thank you for your rating! Your review has been published and reputation scores updated.")
         else:
-            messages.error(request, "Please check the feedback form values.")
+            return render(request, 'mentorship/edit_item.html', {'form': form, 'title': 'Review mentorship', 'mentorship': mentorship})
 
     return redirect('mentorship_workspace', mentorship_id=mentorship.id)

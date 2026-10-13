@@ -52,7 +52,7 @@ class NotificationTests(TestCase):
         send_notification(self.user1, "Notif 2", "SESSION_LOGGED")
         self.client.login(username='alice', password='password123')
 
-        response = self.client.get(reverse('notification_mark_all_read'))
+        response = self.client.post(reverse('notification_mark_all_read'))
         self.assertRedirects(response, reverse('notifications_list'))
 
         self.assertEqual(self.user1.notifications.filter(is_read=False).count(), 0)
@@ -63,7 +63,7 @@ class NotificationTests(TestCase):
         send_notification(self.user1, "Unread notif", "SESSION_LOGGED")
 
         self.client.login(username='alice', password='password123')
-        response = self.client.get(reverse('notification_clear_read'))
+        response = self.client.post(reverse('notification_clear_read'))
         self.assertRedirects(response, reverse('notifications_list'))
 
         self.assertEqual(self.user1.notifications.count(), 1)

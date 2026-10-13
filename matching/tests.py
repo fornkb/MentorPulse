@@ -17,7 +17,7 @@ class MatchingEngineTests(TestCase):
         self.learner_profile = self.learner_user.profile
         self.learner_profile.experience_level = 'Beginner'
         self.learner_profile.availability = 'Weekdays'
-        self.learner_profile.skills.add(self.skill_py, self.skill_dj)
+        self.learner_profile.learning_skills.add(self.skill_py, self.skill_dj)
         self.learner_profile.save()
 
         # Mentor 1: High Match (Teaches Python & Django, Advanced, Weekdays)
@@ -94,7 +94,7 @@ class MatchingViewsTests(TestCase):
             username='solo_learner',
             password='Password123!'
         )
-        self.learner.profile.skills.add(self.skill_python)
+        self.learner.profile.learning_skills.add(self.skill_python)
         self.learner.profile.save()
 
     def test_directory_view_guest(self):
@@ -151,5 +151,5 @@ class MatchingViewsTests(TestCase):
         self.client.login(username='solo_learner', password='Password123!')
         response = self.client.get(reverse('mentor_detail', kwargs={'user_id': self.mentor.id}))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Match Compatibility Analysis')
-        self.assertContains(response, 'Skill Overlap')
+        self.assertContains(response, 'Why this match')
+        self.assertContains(response, 'Skill overlap')

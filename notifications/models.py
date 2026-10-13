@@ -10,6 +10,8 @@ class Notification(models.Model):
         ('SESSION_LOGGED', 'Session Scheduled / Updated'),
         ('FEEDBACK_RECEIVED', 'Feedback Received'),
         ('BADGE_EARNED', 'Badge Awarded'),
+        ('SESSION_REMINDER', 'Upcoming Session Reminder'),
+        ('DISCUSSION', 'New Discussion Message'),
     ]
 
     user = models.ForeignKey(
@@ -23,6 +25,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     link = models.CharField(max_length=255, blank=True, help_text="Target URL or path for interaction")
     created_at = models.DateTimeField(auto_now_add=True)
+    event_key = models.CharField(max_length=120, null=True, blank=True, unique=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -63,3 +66,11 @@ class Notification(models.Model):
             'BADGE_EARNED': 'bg-primary text-light',
         }
         return badges.get(self.type, 'bg-secondary text-light')
+
+
+class NotificationPreference(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preferences')
+    session_updates = models.BooleanField(default=True)
+    session_reminders = models.BooleanField(default=True)
+    discussions = models.BooleanField(default=True)
+    achievements = models.BooleanField(default=True)

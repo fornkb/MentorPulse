@@ -1,6 +1,7 @@
 import os
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from .models import Mentorship, Session, Milestone, Resource, DiscussionPost
 
 ALLOWED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.txt', '.docx', '.doc']
@@ -28,6 +29,12 @@ class MentorshipRequestForm(forms.ModelForm):
 
 
 class SessionForm(forms.ModelForm):
+    duration_minutes = forms.IntegerField(min_value=15, max_value=240, initial=60, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 15, 'max': 240}))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            from django.utils import timezone
+            self.initial['date'] = timezone.localtime(self.instance.date).strftime('%Y-%m-%dT%H:%M')
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(attrs={
             'class': 'form-control',
@@ -54,10 +61,11 @@ class SessionForm(forms.ModelForm):
 
     class Meta:
         model = Session
-        fields = ['date', 'meeting_link', 'notes']
+        fields = ['date', 'duration_minutes', 'meeting_link', 'notes']
 
 
 class MilestoneForm(forms.ModelForm):
+    due_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}, format='%Y-%m-%d'))
     title = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'form-control',
@@ -67,7 +75,7 @@ class MilestoneForm(forms.ModelForm):
 
     class Meta:
         model = Milestone
-        fields = ['title']
+        fields = ['title', 'due_date']
 
 
 class ResourceForm(forms.ModelForm):
@@ -121,6 +129,11 @@ class ResourceForm(forms.ModelForm):
 
         if rtype == 'LINK' and not content:
             self.add_error('content', "Please provide a valid URL for Web Link resources.")
+        elif rtype == 'LINK':
+            try:
+                URLValidator(schemes=['http', 'https'])(content)
+            except ValidationError:
+                self.add_error('content', 'Use a valid link beginning with https:// or http://.')
         elif rtype == 'FILE' and not uploaded_file:
             self.add_error('file', "Please attach a file for File Upload resources.")
         elif rtype == 'NOTE' and not content:

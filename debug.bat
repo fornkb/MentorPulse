@@ -9,7 +9,10 @@ echo =================================================================
 echo.
 
 :: 1. Verify Python availability
-python --version >nul 2>&1
+cd /d "%~dp0"
+set "MP_PYTHON=python"
+if exist ".venv\Scripts\python.exe" set "MP_PYTHON=%~dp0.venv\Scripts\python.exe"
+"%MP_PYTHON%" --version >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Python is not found in your PATH!
     echo Please install Python 3.10+ and ensure "Add python.exe to PATH" is checked.
@@ -19,7 +22,7 @@ if errorlevel 1 (
 
 :: 2. Apply database migrations
 echo [1/4] Applying database schema migrations...
-python manage.py migrate
+"%MP_PYTHON%" manage.py migrate
 if errorlevel 1 (
     echo [ERROR] Migration failed. Check your Python environment.
     pause
@@ -28,8 +31,13 @@ if errorlevel 1 (
 
 :: 3. Seed demo data
 echo.
-echo [2/4] Verifying and seeding turnkey demo data...
-python manage.py seed_demo_data
+echo [2/4] Preparing demo data (existing accounts and activity are preserved)...
+"%MP_PYTHON%" manage.py seed_demo_data
+if errorlevel 1 (
+    echo [ERROR] Demo preparation failed. Existing data has not been reset.
+    pause
+    exit /b 1
+)
 
 :: 4. Launch web browser automatically
 echo.
@@ -56,6 +64,6 @@ echo =================================================================
 echo Press Ctrl+C in this console window to stop the server.
 echo.
 
-python manage.py runserver 127.0.0.1:8000
+"%MP_PYTHON%" manage.py runserver_with_reminders 127.0.0.1:8000
 
 pause

@@ -62,7 +62,7 @@ class MentorshipFlowTests(TestCase):
             status='PENDING'
         )
         self.client.login(username='mentor_alice', password='password123')
-        response = self.client.get(reverse('mentorship_accept', kwargs={'mentorship_id': mentorship.id}))
+        response = self.client.post(reverse('mentorship_accept', kwargs={'mentorship_id': mentorship.id}))
         self.assertEqual(response.status_code, 302)
 
         mentorship.refresh_from_db()
@@ -111,7 +111,7 @@ class MentorshipFlowTests(TestCase):
         milestone = mentorship.milestones.first()
 
         # Toggle milestone complete
-        self.client.get(reverse('milestone_toggle', kwargs={'milestone_id': milestone.id}))
+        self.client.post(reverse('milestone_toggle', kwargs={'milestone_id': milestone.id}))
         milestone.refresh_from_db()
         self.assertTrue(milestone.is_completed)
         mentorship.progress.refresh_from_db()
@@ -151,6 +151,8 @@ class MentorshipFlowTests(TestCase):
         Progress.objects.create(mentorship=mentorship)
         self.client.login(username='mentor_alice', password='password123')
 
+        Milestone.objects.create(mentorship=mentorship, title='React roadmap', is_completed=True)
+        Session.objects.create(mentorship=mentorship, date=timezone.now() - timezone.timedelta(days=1), is_completed=True)
         # Complete mentorship
         response = self.client.post(reverse('mentorship_complete', kwargs={'mentorship_id': mentorship.id}))
         self.assertEqual(response.status_code, 302)

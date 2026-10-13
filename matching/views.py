@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Avg, Count
+from django.core.paginator import Paginator
 from accounts.models import Profile, Skill, RoleAssignment
 from .services import calculate_match_score, rank_mentors_for_learner
 
@@ -17,7 +18,7 @@ def mentor_directory_view(request):
         end_time__isnull=True
     ).values_list('user_id', flat=True).distinct()
 
-    mentors_qs = User.objects.filter(id__in=active_mentor_ids).select_related('profile').prefetch_related('profile__skills')
+    mentors_qs = User.objects.filter(id__in=active_mentor_ids, is_active=True).select_related('profile').prefetch_related('profile__skills').annotate(average_rating=Avg('feedbacks_received__rating'), review_count=Count('feedbacks_received', distinct=True), active_mentorship_count=Count('mentor_mentorships', filter=Q(mentor_mentorships__status='ACTIVE'), distinct=True))
 
     # 2. Extract filter parameters
     query = request.GET.get('q', '').strip()
@@ -56,9 +57,22 @@ def mentor_directory_view(request):
         active_filter_count += 1
         mentors_qs = mentors_qs.filter(profile__availability=avail_filter)
 
+    if request.GET.get('saved') == '1':
+        mentors_qs = mentors_qs.filter(saved_by__user=request.user) if request.user.is_authenticated else mentors_qs.none()
+        active_filter_count += 1
+    if request.GET.get('verified') == '1':
+        mentors_qs = mentors_qs.filter(profile__mentor_verified=True)
+        active_filter_count += 1
     # 7. Rank candidate mentors
     ranked_mentors = rank_mentors_for_learner(request.user, mentors_qs)
 
+    if request.GET.get('available') == '1':
+        ranked_mentors = [item for item in ranked_mentors if item['mentor'].active_mentorship_count < item['profile'].mentor_capacity]
+        active_filter_count += 1
+    total_count = len(ranked_mentors)
+    page = Paginator(ranked_mentors, 12).get_page(request.GET.get('page'))
+    filters = request.GET.copy()
+    filters.pop('page', None)
     # 8. Prepare filter options for UI
     all_skills = Skill.objects.all().order_by('category', 'name')
     experience_choices = Profile.EXPERIENCE_CHOICES
@@ -68,8 +82,8 @@ def mentor_directory_view(request):
     popular_skills = Skill.objects.filter(profiles__user__id__in=active_mentor_ids).distinct()[:10]
 
     context = {
-        'ranked_mentors': ranked_mentors,
-        'total_mentors_count': len(ranked_mentors),
+        'ranked_mentors': page, 'page_obj': page, 'filter_query': filters.urlencode(),
+        'total_mentors_count': total_count,
         'all_skills': all_skills,
         'popular_skills': popular_skills,
         'experience_choices': experience_choices,
@@ -90,7 +104,7 @@ def mentor_detail_view(request, user_id):
     Displays credentials, skills portfolio, availability schedule, and match score
     breakdown if the viewing user is an authenticated learner.
     """
-    mentor_user = get_object_or_404(User.objects.select_related('profile').prefetch_related('profile__skills'), id=user_id)
+    mentor_user = get_object_or_404(User.objects.select_related('profile').prefetch_related('profile__skills'), id=user_id, is_active=True)
     profile = mentor_user.profile
 
     # Check if mentor is actively assigned
@@ -118,4 +132,11 @@ def mentor_detail_view(request, user_id):
         'is_own_profile': is_own_profile,
         'shared_skills': match_data.get('shared_skills', []) if match_data else [],
     }
+    from gamification.services import FeedbackService
+    context.update({
+        'rating_summary': FeedbackService.get_user_rating_summary(mentor_user),
+        'active_mentorship_count': mentor_user.mentor_mentorships.filter(status='ACTIVE').count(),
+        'availability_slots': mentor_user.availability_slots.all(),
+        'is_saved': request.user.is_authenticated and request.user.saved_mentors.filter(mentor=mentor_user).exists(),
+    })
     return render(request, 'matching/mentor_detail.html', context)

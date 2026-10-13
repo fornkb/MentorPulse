@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Mentorship(models.Model):
@@ -19,9 +20,15 @@ class Mentorship(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     goals = models.TextField(help_text="Target learning objectives and focus areas")
     is_priority = models.BooleanField(default=False, help_text="Priority queue status")
+    certificate_id = models.UUIDField(null=True, blank=True, unique=True, editable=False)
+    certificate_data = models.JSONField(default=dict, blank=True, editable=False)
 
     class Meta:
         ordering = ['-is_priority', '-id']
+        constraints = [
+            models.UniqueConstraint(fields=['mentor', 'learner'], condition=models.Q(status__in=['PENDING', 'ACTIVE']), name='one_open_mentorship_per_pair'),
+            models.CheckConstraint(condition=~models.Q(mentor=models.F('learner')), name='mentorship_different_participants'),
+        ]
 
     def __str__(self):
         return f"{self.learner.username} -> {self.mentor.username} ({self.status})"
@@ -54,16 +61,11 @@ class Progress(models.Model):
         - Completed milestones: 70% weight
         - Completed sessions: 30% weight
         """
-        if self.mentorship.status == 'COMPLETED':
-            self.completion_pct = 100.0
-            self.save()
-            return self.completion_pct
-
         total_milestones = self.mentorship.milestones.count()
         completed_milestones = self.mentorship.milestones.filter(is_completed=True).count()
 
-        total_sessions = self.mentorship.sessions.count()
-        completed_sessions = self.mentorship.sessions.filter(is_completed=True).count()
+        total_sessions = self.mentorship.sessions.filter(is_cancelled=False).count()
+        completed_sessions = self.mentorship.sessions.filter(is_completed=True, is_cancelled=False).count()
 
         milestone_score = 0.0
         session_score = 0.0
@@ -90,6 +92,9 @@ class Session(models.Model):
     meeting_link = models.URLField(blank=True, help_text="Google Meet or Zoom URL")
     notes = models.TextField(blank=True, help_text="Meeting agenda or follow-up notes")
     is_completed = models.BooleanField(default=False)
+    duration_minutes = models.PositiveSmallIntegerField(default=60, validators=[MinValueValidator(15), MaxValueValidator(240)])
+    is_cancelled = models.BooleanField(default=False)
+    reminder_sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['date']
@@ -98,10 +103,16 @@ class Session(models.Model):
         status = "Completed" if self.is_completed else "Scheduled"
         return f"Session on {self.date.strftime('%b %d, %Y')} ({status})"
 
+    @property
+    def has_ended(self):
+        from datetime import timedelta
+        return self.date + timedelta(minutes=self.duration_minutes) <= timezone.now()
+
 
 class Milestone(models.Model):
     mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='milestones')
     title = models.CharField(max_length=255)
+    due_date = models.DateField(null=True, blank=True)
     is_completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
 

@@ -1,5 +1,7 @@
 from datetime import timedelta
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
+from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.urls import reverse
@@ -15,7 +17,13 @@ from notifications.services import send_notification
 class Command(BaseCommand):
     help = "Turnkey seed script: Populates realistic demo users, mentorships, sessions, badges, and leaderboard for MentorPulse live demos."
 
+    def add_arguments(self, parser):
+        parser.add_argument('--reset-demo', action='store_true', help='Explicitly delete and recreate the named demo accounts and all their activity.')
+
+    @transaction.atomic
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError('Demo seeding is disabled outside local debug mode.')
         self.stdout.write(self.style.NOTICE("Starting MentorPulse Phase 5 Demo Data Seeder..."))
 
         # -------------------------------------------------------------
@@ -36,6 +44,9 @@ class Command(BaseCommand):
 
         # Delete related objects for these users or existing demo instances
         existing_demo_users = User.objects.filter(username__in=demo_usernames)
+        if existing_demo_users.exists() and not options['reset_demo']:
+            self.stdout.write(self.style.SUCCESS('Existing demo accounts preserved. Nothing was reset. Use --reset-demo only to intentionally replace their activity.'))
+            return
         if existing_demo_users.exists():
             Mentorship.objects.filter(mentor__in=existing_demo_users).delete()
             Mentorship.objects.filter(learner__in=existing_demo_users).delete()
@@ -283,6 +294,8 @@ class Command(BaseCommand):
             profile.experience_level = spec["experience_level"]
             profile.availability = spec["availability"]
             profile.skill_score = spec["skill_score"]
+            profile.mentor_verified = spec['is_mentor']
+            profile.email_verified = True
             profile.bio = spec["bio"]
             profile.goals = spec["goals"]
             profile.save()
@@ -290,12 +303,14 @@ class Command(BaseCommand):
             for sname in spec["skills"]:
                 if sname in skill_map:
                     profile.skills.add(skill_map[sname])
+                    if spec['is_learner']:
+                        profile.learning_skills.add(skill_map[sname])
 
             # Manage Role Assignments
             if spec["is_mentor"]:
-                RoleAssignment.objects.create(user=user, role="Mentor", context="Active Mentor Assignment")
+                RoleAssignment.objects.get_or_create(user=user, role="Mentor", end_time__isnull=True, defaults={"context": "Active Mentor Assignment"})
             if spec["is_learner"]:
-                RoleAssignment.objects.create(user=user, role="Learner", context="Active Learner Assignment")
+                RoleAssignment.objects.get_or_create(user=user, role="Learner", end_time__isnull=True, defaults={"context": "Active Learner Assignment"})
 
             # Initialize Wallet
             CreditService.get_or_create_credit(user)
@@ -643,6 +658,13 @@ class Command(BaseCommand):
             type="REQUEST_RECEIVED",
             link="/mentorships/"
         )
+
+        # Issue stable credentials for the completed demo, without fabricating progress.
+        from uuid import uuid4
+        from mentorship.services import certificate_snapshot
+        m_completed.certificate_id = uuid4()
+        m_completed.certificate_data = certificate_snapshot(m_completed)
+        m_completed.save(update_fields=['certificate_id', 'certificate_data'])
 
         self.stdout.write(self.style.SUCCESS("=" * 65))
         self.stdout.write(self.style.SUCCESS("[SUCCESS] MentorPulse Phase 5 Demo Data Seeded Successfully!"))

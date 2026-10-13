@@ -1,0 +1,9 @@
+<div class="dropdown">
+    <button class="mp-btn mp-btn-secondary mp-btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Demo Switcher" title="Demo Switcher">Demo</button>
+    <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu" style="max-height:440px; overflow-y:auto">
+        {% for role, accounts in demo_users_by_role.items %}{% if accounts %}
+            <li class="mp-dropdown-heading">{{ role|title }}</li>
+            {% for account in accounts %}<li><a class="dropdown-item {% if account == user %}active{% endif %}" href="{% url 'switch_user' account.id %}?next={% url 'dashboard' %}"><span class="flex-grow-1">{{ account.get_full_name|default:account.username }}</span>{% if account == user %}<i class="bi bi-check2" aria-hidden="true"></i>{% endif %}</a></li>{% endfor %}
+        {% endif %}{% endfor %}
+    </ul>
+</div>

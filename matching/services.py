@@ -32,7 +32,7 @@ def calculate_match_score(learner_profile: Profile, mentor_profile: Profile) -> 
         }
 
     # 1. Skill Overlap (50%)
-    learner_skills = set(learner_profile.skills.all())
+    learner_skills = set(learner_profile.learning_skills.all())
     mentor_skills = set(mentor_profile.skills.all())
     shared_skills = list(learner_skills & mentor_skills)
 

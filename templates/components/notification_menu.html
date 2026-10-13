@@ -1,0 +1,8 @@
+<div class="dropdown">
+    <button class="mp-icon-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications"><i class="bi bi-bell" aria-hidden="true"></i><span id="notification-count" {% if not unread_notification_count %}hidden{% endif %} aria-live="polite"><span id="notification-count-value">{{ unread_notification_count }}</span><span class="visually-hidden"> unread notifications</span></span></button>
+    <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu mp-notification-menu">
+        <li class="d-flex align-items-center justify-content-between gap-3 px-3 py-2"><span class="fw-semibold small">Notifications</span>{% if unread_notification_count %}<form method="post" action="{% url 'notification_mark_all_read' %}">{% csrf_token %}<button type="submit" class="mp-btn-link small">Mark all read</button></form>{% endif %}</li>
+        {% for notification in navbar_notifications %}<li><a class="dropdown-item mp-notification-item {% if not notification.is_read %}is-unread{% endif %}" href="{% url 'notification_read' notification.id %}"><div><div class="small">{{ notification.message|truncatechars:110 }}</div><div class="mp-quiet-meta mt-1">{{ notification.created_at|timesince }} ago</div></div></a></li>{% empty %}<li class="px-3 py-4 text-center mp-quiet-meta">You’re all caught up.</li>{% endfor %}
+        <li><hr class="dropdown-divider"></li><li><a class="dropdown-item justify-content-center" href="{% url 'notifications_list' %}">View all notifications <i class="bi bi-arrow-right" aria-hidden="true"></i></a></li>
+    </ul>
+</div>

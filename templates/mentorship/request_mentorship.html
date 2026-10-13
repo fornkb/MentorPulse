@@ -18,7 +18,7 @@
             <div class="mp-card mp-card-glass mb-4 p-4">
                 <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="mp-user-avatar shadow" style="width: 58px; height: 58px; font-size: 1.5rem;">
+                        <div class="mp-user-avatar shadow" style="width: 58px; height: 58px; font-size: 1.5rem">
                             {{ mentor.username|slice:":1"|upper }}
                         </div>
                         <div>
@@ -26,8 +26,8 @@
                                 Request Mentorship with {{ mentor.get_full_name|default:mentor.username }}
                             </h2>
                             <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-secondary font-monospace" style="font-size: 0.72rem;">@{{ mentor.username }}</span>
-                                <span class="mp-badge exp-badge-{{ profile.experience_level }}" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;">
+                                <span class="badge bg-secondary font-monospace" style="font-size: 0.72rem">@{{ mentor.username }}</span>
+                                <span class="mp-badge exp-badge-{{ profile.experience_level }}" style="font-size: 0.7rem; padding: 0.15rem 0.5rem">
                                     {{ profile.experience_level }} Tier
                                 </span>
                                 <span class="small text-muted">
@@ -59,7 +59,7 @@
                 </div>
 
                 <form method="post" action="{% url 'mentorship_request' mentor.id %}">
-                    {% csrf_token %}
+                    {% csrf_token %}{{ form.non_field_errors }}
 
                     <!-- Goals Input -->
                     <div class="mb-4">
@@ -77,7 +77,7 @@
 
                     <!-- Priority Queue Option -->
                     <div class="mb-4">
-                        <label class="role-choice-card d-block p-3 border-warning border-opacity-50" style="background: rgba(245, 158, 11, 0.05);" for="id_is_priority">
+                        <label class="role-choice-card d-block p-3 border-warning border-opacity-50" for="id_is_priority">
                             <div class="d-flex align-items-start gap-3">
                                 <div class="mt-1">
                                     {{ form.is_priority }}

@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — MentorPulse{% endblock %}
+{% block content %}
+<div class="container"><div class="mp-auth"><header class="mp-auth-header"><h1>{{ title }}</h1></header><div class="mp-card">{% if form %}<form method="post" class="mp-simple-form">{% csrf_token %}{% include 'components/form_fields.html' %}<button type="submit" class="mp-btn mp-btn-primary w-100">Continue</button></form>{% else %}<p class="mp-profile-text">This reset link is invalid or has expired.</p><a class="mp-btn-link mt-3" href="{% url 'password_reset' %}">Request a new link</a>{% endif %}</div><p class="mp-auth-footer"><a href="{% url 'login' %}">Back to sign in</a></p></div></div>
+{% endblock %}

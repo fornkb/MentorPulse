@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Mentor verification — MentorPulse{% endblock %}
+{% block content %}<div class="container py-4"><div class="mp-card mx-auto" style="max-width:760px"><h1 class="h4">Mentor verification</h1>
+<p>Share your experience, qualifications, and links to supporting work. An administrator reviews your request before adding a verified badge.</p>
+{% if profile.mentor_verified %}<p class="text-success">You are already verified.</p>{% else %}{% if error %}<p role="alert" class="text-danger">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}<label class="mp-form-label" for="evidence">Experience and supporting evidence</label><textarea class="form-control mb-3" id="evidence" name="evidence" rows="6" minlength="20" maxlength="4000" required>{{ evidence|default:profile.verification_evidence }}</textarea><button class="mp-btn mp-btn-primary">Submit for review</button></form>{% endif %}</div></div>{% endblock %}

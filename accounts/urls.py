@@ -1,7 +1,29 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('settings/', views.account_settings_view, name='account_settings'),
+    path('settings/availability/', views.availability_settings_view, name='availability_settings'),
+    path('settings/availability/<int:slot_id>/delete/', views.availability_delete_view, name='availability_delete'),
+    path('settings/mentor-verification/', views.mentor_verification_request_view, name='mentor_verification_request'),
+    path('verify-email/<str:token>/', views.verify_email_view, name='verify_email'),
+    path('verify-email/', views.resend_verification_view, name='resend_verification'),
+    path('report/<int:user_id>/', views.report_user_view, name='report_user'),
+    path('saved-mentors/<int:mentor_id>/', views.save_mentor_view, name='save_mentor'),
+    path('password-reset/', auth_views.PasswordResetView.as_view(template_name='accounts/auth_form.html',
+        email_template_name='accounts/password_reset_email.txt', subject_template_name='accounts/password_reset_subject.txt',
+        extra_context={'title': 'Reset your password'}), name='password_reset'),
+    path('password-reset/sent/', auth_views.PasswordResetDoneView.as_view(template_name='accounts/auth_done.html',
+        extra_context={'title': 'Check your email', 'message': 'If an active account uses that address, we sent a password reset link.'}), name='password_reset_done'),
+    path('password-reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='accounts/auth_form.html',
+        extra_context={'title': 'Choose a new password'}), name='password_reset_confirm'),
+    path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(template_name='accounts/auth_done.html',
+        extra_context={'title': 'Password updated', 'message': 'Your password was changed. You can now sign in.'}), name='password_reset_complete'),
+    path('password-change/', auth_views.PasswordChangeView.as_view(template_name='accounts/auth_form.html',
+        extra_context={'title': 'Change your password'}), name='password_change'),
+    path('password-change/complete/', auth_views.PasswordChangeDoneView.as_view(template_name='accounts/auth_done.html',
+        extra_context={'title': 'Password updated', 'message': 'Your password has been changed.'}), name='password_change_done'),
     path('', views.dashboard_view, name='dashboard'),
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),

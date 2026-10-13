@@ -8,6 +8,9 @@ class Credit(models.Model):
     balance = models.IntegerField(default=50)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(balance__gte=0), name='credit_balance_nonnegative')]
+
     def __str__(self):
         return f"{self.user.username}: {self.balance} Credits"
 
@@ -27,6 +30,7 @@ class CreditTransaction(models.Model):
     reason = models.CharField(max_length=40, choices=REASON_CHOICES)
     context = models.CharField(max_length=255, blank=True, help_text="Optional detail or mentorship reference")
     created_at = models.DateTimeField(auto_now_add=True)
+    event_key = models.CharField(max_length=100, null=True, blank=True, unique=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -54,6 +58,7 @@ class Feedback(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [models.UniqueConstraint(fields=['mentorship', 'given_by'], name='one_review_per_participant')]
 
     def __str__(self):
         return f"{self.given_by.username} rated {self.given_to.username}: {self.rating} stars"

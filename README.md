@@ -1,7 +1,7 @@
 # MentorPulse 🎓⚡
 
 > **Skill-Based Mentor Matching & Progress Tracking Platform**
-> **Version 1.0 (Phase 1–5 Complete — Production-Ready Demo)**
+> **Version 1.0 (Local Demo with Product Improvements)**
 
 MentorPulse connects learners looking to develop specific technical, design, or business skills with qualified mentors. The platform manages the full mentorship lifecycle: algorithmic discovery, priority booking, live session tracking, discrete milestone progress, resource sharing, in-app notifications, achievement badges, and print-ready credential certificates.
 
@@ -22,14 +22,14 @@ This script:
 2. Applies database migrations automatically.
 3. Runs `python manage.py seed_demo_data` to ensure all demo accounts, mentorships, and notifications are ready.
 4. Opens your default web browser to [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
-5. Launches the local development server.
+5. Launches the local development server with automatic session reminders.
 
 ---
 
 ## 🚀 Key Features (Phase 1 to Phase 5)
 
 ### 1. In-App Notification Center (`notifications` app)
-- **Centralized Event Dispatching**: Real-time notifications dispatched for incoming mentorship requests, approvals, declinations, session reminders, mutual reviews, and unlocked badges.
+- **Centralized Event Dispatching**: In-app notifications generated for incoming mentorship requests, approvals, declinations, session reminders, mutual reviews, and unlocked badges.
 - **Top Navbar Bell Menu**: Dynamic dropdown with unread badge counter and fast previews of the 5 most recent notifications.
 - **Full Notification Hub (`/notifications/`)**: Tabbed inbox filtering (*All* vs *Unread*), "Mark all as read", "Clear read", and 1-click routing directly to relevant workspaces or certificates.
 
@@ -42,7 +42,7 @@ This script:
 
 ### 3. Turnkey Demo Data Seeder (`seed_demo_data`)
 - Run with a single command: `python manage.py seed_demo_data`.
-- Cleans and regenerates:
+- Creates the following on a fresh database; preserves existing demo accounts on subsequent launches:
   - **Skills Taxonomy**: 25+ standardized skills across Programming, Design, Data, Business, and DevOps.
   - **Starter Badges**: First Steps, Committed Mentor, Rising Star, Top Rated, Helpful Hand.
   - **Active Mentorship**: Sarah Connor & Alex Rivera (67% progress, past & upcoming sessions, Google Meet links, resources, discussion posts).
@@ -109,7 +109,7 @@ python manage.py seed_demo_data
 
 ### 6. Start the development server
 ```bash
-python manage.py runserver
+python manage.py runserver_with_reminders
 ```
 
 Open your browser at **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)**.
@@ -144,9 +144,13 @@ Run the complete test suite across all 5 domain apps:
 python manage.py test
 ```
 
-Expect **53 tests** passing with code 0 (`OK`).
+The suite now includes **117 tests**. For faster local tests with isolated email and uploads, run `python manage.py test --settings=mentorpulse.test_settings`.
 
 ---
+
+## Product Improvements
+
+See [PRODUCT_UPDATES.md](PRODUCT_UPDATES.md) for the new daily-use features, completion rules, SMTP setup, reminder scheduling, and explicit demo-reset command.
 
 ## 📄 License & Origin
 

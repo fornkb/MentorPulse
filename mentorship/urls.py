@@ -2,6 +2,13 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('certificates/verify/<uuid:certificate_id>/', views.certificate_verify_view, name='certificate_verify'),
+    path('<int:mentorship_id>/certificate/pdf/', views.certificate_pdf_view, name='certificate_pdf'),
+    path('sessions/<int:session_id>/edit/', views.session_edit_view, name='session_edit'),
+    path('sessions/<int:session_id>/cancel/', views.session_cancel_view, name='session_cancel'),
+    path('sessions/<int:session_id>/calendar/', views.session_calendar_view, name='session_calendar'),
+    path('milestones/<int:milestone_id>/edit/', views.milestone_edit_view, name='milestone_edit'),
+    path('resources/<int:resource_id>/download/', views.resource_download_view, name='resource_download'),
     path('', views.mentorship_list_view, name='mentorship_list'),
     path('request/<int:mentor_id>/', views.request_mentorship_view, name='mentorship_request'),
     path('<int:mentorship_id>/', views.mentorship_workspace_view, name='mentorship_workspace'),

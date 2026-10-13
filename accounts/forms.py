@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Profile, Skill, RoleAssignment
+from zoneinfo import available_timezones
+from .models import Profile, Skill, RoleAssignment, AvailabilitySlot, UserReport
 
 
 class UserRegistrationForm(forms.ModelForm):
@@ -106,6 +107,12 @@ class UserLoginForm(forms.Form):
 
 
 class UserUpdateForm(forms.ModelForm):
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise ValidationError('An account with this email address already exists.')
+        return email
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
@@ -117,6 +124,19 @@ class UserUpdateForm(forms.ModelForm):
 
 
 class ProfileEditForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['mentor_capacity'].required = False
+
+    def clean_timezone(self):
+        return self.cleaned_data.get('timezone') or self.instance.timezone or 'UTC'
+
+    def clean_mentor_capacity(self):
+        value = self.cleaned_data.get('mentor_capacity')
+        return self.instance.mentor_capacity or 5 if value is None else value
+
+    timezone = forms.ChoiceField(required=False, choices=[(name, name.replace('_', ' ')) for name in sorted(available_timezones())], widget=forms.Select(attrs={'class': 'form-select'}))
+    learning_skills = forms.ModelMultipleChoiceField(queryset=Skill.objects.all(), required=False, widget=forms.CheckboxSelectMultiple)
     skills = forms.ModelMultipleChoiceField(
         queryset=Skill.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -125,12 +145,14 @@ class ProfileEditForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['bio', 'experience_level', 'availability', 'goals', 'skills']
+        fields = ['bio', 'experience_level', 'availability', 'goals', 'skills', 'learning_skills', 'timezone', 'portfolio_url', 'mentor_capacity']
         widgets = {
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Introduce yourself, your background, and your aspirations...'}),
             'experience_level': forms.Select(attrs={'class': 'form-select'}),
             'availability': forms.Select(attrs={'class': 'form-select'}),
             'goals': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'What are you hoping to achieve on MentorPulse?'}),
+            'portfolio_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'mentor_capacity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 50}),
         }
 
 
@@ -151,3 +173,27 @@ class RoleToggleForm(forms.Form):
         if not is_mentor and not is_learner:
             raise ValidationError("You must keep at least one active role (Mentor or Learner).")
         return cleaned_data
+
+
+class AvailabilitySlotForm(forms.ModelForm):
+    class Meta:
+        model = AvailabilitySlot
+        fields = ['weekday', 'start_time', 'end_time']
+        widgets = {'weekday': forms.Select(attrs={'class': 'form-select'}),
+                   'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+                   'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'})}
+
+    def clean(self):
+        data = super().clean()
+        start, end = data.get('start_time'), data.get('end_time')
+        if start and end and end <= start:
+            raise ValidationError('End time must be after start time on the same day.')
+        return data
+
+
+class UserReportForm(forms.ModelForm):
+    class Meta:
+        model = UserReport
+        fields = ['reason', 'details']
+        widgets = {'reason': forms.Select(attrs={'class': 'form-select'}),
+                   'details': forms.Textarea(attrs={'class': 'form-control', 'rows': 5})}

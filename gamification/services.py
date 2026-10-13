@@ -1,129 +1,92 @@
 from django.contrib.auth.models import User
-from django.db.models import Avg, Q
+from django.db import transaction, IntegrityError
+from django.db.models import Avg, Q, F
 from django.utils import timezone
 from django.urls import reverse
 from .models import Credit, CreditTransaction, Feedback, Badge, UserBadge, LeaderboardEntry
 from mentorship.models import Mentorship, Resource
 from notifications.services import send_notification
+from mentorpulse.db import retry_database_lock
 
 
 class CreditService:
     @staticmethod
-    def get_or_create_credit(user: User) -> Credit:
-        """Ensure user has a Credit wallet record with starting bonus."""
-        credit, created = Credit.objects.get_or_create(user=user, defaults={'balance': 50})
-        if created:
-            CreditTransaction.objects.create(
-                user=user,
-                amount=50,
-                reason='STARTING_BONUS',
-                context='Welcome credit bonus upon registration'
-            )
-        return credit
+    def get_or_create_credit(user):
+        with transaction.atomic():
+            credit, created = Credit.objects.get_or_create(user=user, defaults={'balance': 50})
+            if created:
+                CreditTransaction.objects.create(user=user, amount=50, reason='STARTING_BONUS',
+                    context='Welcome credit bonus upon registration', event_key=f'welcome:{user.pk}')
+            return credit
 
     @staticmethod
-    def deduct_for_request(learner: User, is_priority: bool = False) -> tuple[bool, str]:
-        """
-        Deduct credits for initiating a mentorship request.
-        Standard Fee: 10 credits.
-        Priority Fee: 15 credits (10 + 5 priority queue placement).
-        """
-        credit = CreditService.get_or_create_credit(learner)
-        required_credits = 15 if is_priority else 10
-
-        if credit.balance < required_credits:
-            return (
-                False,
-                f"Insufficient credits ({credit.balance} available). You need at least {required_credits} credits to submit this request."
-            )
-
-        # 1. Deduct standard request fee
-        credit.balance -= 10
-        CreditTransaction.objects.create(
-            user=learner,
-            amount=-10,
-            reason='SESSION_REQUEST',
-            context='Mentorship application request fee'
-        )
-
-        # 2. Deduct priority fee if selected
-        if is_priority:
-            credit.balance -= 5
-            CreditTransaction.objects.create(
-                user=learner,
-                amount=-5,
-                reason='PRIORITY_UNLOCK',
-                context='⭐ Fast-track priority queue unlock'
-            )
-
-        credit.save()
-        LeaderboardService.recalculate_leaderboard()
-        return (True, f"Deducted {required_credits} credits successfully.")
+    @retry_database_lock
+    def deduct_for_request(learner, is_priority=False, mentorship=None):
+        with transaction.atomic():
+            credit = CreditService.get_or_create_credit(learner)
+            cost = 15 if is_priority else 10
+            # The conditional database update serializes spenders even on SQLite.
+            changed = Credit.objects.filter(pk=credit.pk, balance__gte=cost).update(
+                balance=F('balance') - cost, updated_at=timezone.now())
+            if not changed:
+                credit.refresh_from_db()
+                return False, f'Insufficient credits ({credit.balance} available). You need {cost} credits.'
+            CreditTransaction.objects.create(user=learner, amount=-10, reason='SESSION_REQUEST',
+                context='Mentorship application request fee',
+                event_key=f'request:{mentorship.pk}' if mentorship else None)
+            if is_priority:
+                CreditTransaction.objects.create(user=learner, amount=-5, reason='PRIORITY_UNLOCK',
+                    context='Priority queue placement fee',
+                    event_key=f'priority:{mentorship.pk}' if mentorship else None)
+            return True, f'Deducted {cost} credits.'
 
     @staticmethod
-    def refund_for_request(mentorship: Mentorship) -> bool:
-        """
-        Refund credits when a mentorship request is rejected or cancelled.
-        """
-        learner = mentorship.learner
-        credit = CreditService.get_or_create_credit(learner)
+    @retry_database_lock
+    def _award(user, amount, reason, context, event_key):
+        try:
+            with transaction.atomic():
+                credit = CreditService.get_or_create_credit(user)
+                # Unique event keys make retries safe; the balance and ledger commit together.
+                if CreditTransaction.objects.filter(user=user, context=context, reason=reason).exists():
+                    return False
+                CreditTransaction.objects.create(user=user, amount=amount, reason=reason,
+                    context=context, event_key=event_key)
+                Credit.objects.filter(pk=credit.pk).update(balance=F('balance') + amount, updated_at=timezone.now())
+            return True
+        except IntegrityError:
+            if CreditTransaction.objects.filter(event_key=event_key).exists():
+                return False
+            raise
 
-        refund_amount = 15 if mentorship.is_priority else 10
+    @staticmethod
+    def refund_for_request(mentorship):
+        return CreditService._award(mentorship.learner, 15 if mentorship.is_priority else 10,
+            'SESSION_REFUND', f'Refund for mentorship #{mentorship.pk}', f'refund:{mentorship.pk}')
 
-        # Check if already refunded to prevent double refunds
-        context_check = f"Refund for mentorship #{mentorship.id}"
-        if CreditTransaction.objects.filter(user=learner, context=context_check).exists():
+    @staticmethod
+    def reward_mentor_for_session(session):
+        if not session.is_completed or session.is_cancelled:
             return False
-
-        credit.balance += refund_amount
-        credit.save()
-
-        CreditTransaction.objects.create(
-            user=learner,
-            amount=refund_amount,
-            reason='SESSION_REFUND',
-            context=context_check
-        )
-        LeaderboardService.recalculate_leaderboard()
-        return True
-
-    @staticmethod
-    def reward_mentor_for_session(session) -> bool:
-        """
-        Award mentor +10 credits for completing a meeting session.
-        """
-        mentor = session.mentorship.mentor
-        credit = CreditService.get_or_create_credit(mentor)
-
-        context_label = f"Completed meeting session #{session.id}"
-        # Prevent duplicate rewards for the same session
-        if CreditTransaction.objects.filter(user=mentor, context=context_label).exists():
-            return False
-
-        credit.balance += 10
-        credit.save()
-
-        CreditTransaction.objects.create(
-            user=mentor,
-            amount=10,
-            reason='SESSION_COMPLETED_REWARD',
-            context=context_label
-        )
-
-        # Check badges & leaderboard
-        BadgeService.check_and_award_badges(mentor)
-        LeaderboardService.recalculate_leaderboard()
-        return True
+        awarded = CreditService._award(session.mentorship.mentor, 10, 'SESSION_COMPLETED_REWARD',
+            f'Completed meeting session #{session.pk}', f'session:{session.pk}')
+        if awarded:
+            BadgeService.check_and_award_badges(session.mentorship.mentor)
+        return awarded
 
     reward_session_completed = reward_mentor_for_session
 
 
 class FeedbackService:
     @staticmethod
+    @transaction.atomic
     def submit_feedback(mentorship: Mentorship, given_by: User, rating: int, comment: str) -> Feedback:
         """
         Save collaboration rating and review, then trigger badge and ranking recalculation.
         """
+        if given_by.pk not in [mentorship.mentor_id, mentorship.learner_id] or mentorship.status not in ['ACTIVE', 'COMPLETED']:
+            raise ValueError('Only active or completed mentorship participants may leave feedback.')
+        if rating not in range(1, 6):
+            raise ValueError('Choose a rating between 1 and 5.')
         if mentorship.feedbacks.filter(given_by=given_by).exists():
             raise ValueError("Feedback already submitted for this mentorship.")
 

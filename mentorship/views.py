@@ -1,482 +1,417 @@
+from datetime import timedelta, timezone as datetime_timezone
+from io import BytesIO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponse, FileResponse
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 from .models import Mentorship, Progress, Session, Milestone, Resource, DiscussionPost
-from .forms import (
-    MentorshipRequestForm,
-    SessionForm,
-    MilestoneForm,
-    ResourceForm,
-    DiscussionPostForm
-)
+from .forms import MentorshipRequestForm, SessionForm, MilestoneForm, ResourceForm, DiscussionPostForm
+from .services import create_request, transition_request, completion_errors, complete_mentorship, save_session, lock_participants
 from matching.services import calculate_match_score
-from gamification.services import CreditService, FeedbackService, BadgeService, LeaderboardService
+from gamification.services import CreditService, BadgeService
 from gamification.forms import FeedbackForm
 from notifications.services import send_notification
+from mentorpulse.db import retry_database_lock
+
+
+def show_errors(request, error):
+    for message in error.messages:
+        messages.error(request, message)
+
+
+def workspace_redirect(mentorship):
+    return redirect('mentorship_workspace', mentorship_id=mentorship.pk)
 
 
 @login_required
 def request_mentorship_view(request, mentor_id):
-    """Initiate a mentorship request to a mentor with goals and optional priority flag."""
-    mentor = get_object_or_404(User.objects.select_related('profile'), id=mentor_id)
-
-    # 1. Validation: Cannot request self
-    if request.user == mentor:
-        messages.error(request, "You cannot send a mentorship request to yourself.")
-        return redirect('mentor_detail', user_id=mentor_id)
-
-    # 2. Validation: Target user must be an active mentor
-    if not mentor.role_assignments.filter(role='Mentor', end_time__isnull=True).exists():
-        messages.error(request, f"{mentor.username} is not currently accepting mentorship requests.")
+    mentor = get_object_or_404(User.objects.select_related('profile'), pk=mentor_id, is_active=True)
+    if request.user == mentor or not mentor.profile.is_mentor:
+        messages.error(request, 'Choose another active mentor.')
         return redirect('mentor_list')
-
-    # 3. Check for existing active or pending mentorship
-    existing = Mentorship.objects.filter(
-        learner=request.user,
-        mentor=mentor,
-        status__in=['PENDING', 'ACTIVE']
-    ).first()
-
+    existing = Mentorship.objects.filter(learner=request.user, mentor=mentor, status__in=['PENDING', 'ACTIVE']).first()
     if existing:
-        if existing.status == 'ACTIVE':
-            messages.info(request, f"You already have an active mentorship with {mentor.get_full_name() or mentor.username}.")
-            return redirect('mentorship_workspace', mentorship_id=existing.id)
+        messages.info(request, 'You already have an open request or mentorship with this mentor.')
+        return workspace_redirect(existing) if existing.status == 'ACTIVE' else redirect('mentorship_list')
+    form = MentorshipRequestForm(request.POST if request.method == 'POST' else None)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            create_request(request.user, mentor, form.cleaned_data['goals'], form.cleaned_data['is_priority'])
+        except ValidationError as error:
+            form.add_error(None, error)
         else:
-            messages.warning(request, f"You already have a pending request awaiting review from {mentor.get_full_name() or mentor.username}.")
+            messages.success(request, 'Request submitted. Your wallet was charged once.')
             return redirect('mentorship_list')
-
-    # Calculate match breakdown for context
-    match_data = calculate_match_score(request.user.profile, mentor.profile)
-
-    if request.method == 'POST':
-        form = MentorshipRequestForm(request.POST)
-        if form.is_valid():
-            is_priority = form.cleaned_data.get('is_priority', False)
-            success, msg = CreditService.deduct_for_request(request.user, is_priority=is_priority)
-            if not success:
-                messages.error(request, msg)
-                return render(request, 'mentorship/request_mentorship.html', {
-                    'mentor': mentor,
-                    'profile': mentor.profile,
-                    'form': form,
-                    'match_data': match_data,
-                })
-
-            mentorship = form.save(commit=False)
-            mentorship.learner = request.user
-            mentorship.mentor = mentor
-            mentorship.status = 'PENDING'
-            mentorship.save()
-
-            send_notification(
-                user=mentor,
-                message=f"New mentorship request from {request.user.get_full_name() or request.user.username}{' (⭐ Priority)' if mentorship.is_priority else ''}.",
-                type='REQUEST_RECEIVED',
-                link=reverse('mentorship_list')
-            )
-
-            messages.success(
-                request,
-                f"Your mentorship request has been submitted to {mentor.get_full_name() or mentor.username}! "
-                f"{'⭐ Priority flag activated.' if mentorship.is_priority else ''} "
-                f"({15 if is_priority else 10} credits deducted from your wallet)."
-            )
-            return redirect('mentorship_list')
-    else:
-        form = MentorshipRequestForm()
-
-    context = {
-        'mentor': mentor,
-        'profile': mentor.profile,
-        'form': form,
-        'match_data': match_data,
-    }
-    return render(request, 'mentorship/request_mentorship.html', context)
-
+    return render(request, 'mentorship/request_mentorship.html', {
+        'mentor': mentor, 'profile': mentor.profile, 'form': form,
+        'match_data': calculate_match_score(request.user.profile, mentor.profile),
+    })
 
 
 @login_required
 def mentorship_list_view(request):
-    """Central hub for all user mentorships (Active, Pending Incoming, Pending Outgoing, Completed)."""
     user = request.user
+    involved = Mentorship.objects.filter(Q(mentor=user) | Q(learner=user)).select_related('mentor__profile', 'learner__profile', 'progress')
+    active = involved.filter(status='ACTIVE')
+    incoming = involved.filter(mentor=user, status='PENDING')
+    return render(request, 'mentorship/mentorship_list.html', {
+        'active_mentorships': active, 'incoming_requests': incoming,
+        'outgoing_requests': involved.filter(learner=user, status='PENDING'),
+        'completed_mentorships': involved.filter(status='COMPLETED'),
+        'has_pending_incoming': incoming.exists(), 'total_active_count': active.count(),
+    })
 
-    # 1. Active Mentorships (both as Learner and as Mentor)
-    active_mentorships = Mentorship.objects.filter(
-        status='ACTIVE'
-    ).filter(
-        learner=user
-    ) | Mentorship.objects.filter(
-        status='ACTIVE',
-        mentor=user
-    )
-    active_mentorships = active_mentorships.select_related('mentor__profile', 'learner__profile', 'progress').distinct()
 
-    # 2. Incoming Pending Requests (for mentors)
-    incoming_requests = Mentorship.objects.filter(
-        mentor=user,
-        status='PENDING'
-    ).select_related('learner__profile').order_by('-is_priority', '-id')
-
-    # 3. Outgoing Pending Requests (for learners)
-    outgoing_requests = Mentorship.objects.filter(
-        learner=user,
-        status='PENDING'
-    ).select_related('mentor__profile').order_by('-id')
-
-    # 4. Completed Mentorships
-    completed_mentorships = Mentorship.objects.filter(
-        status='COMPLETED'
-    ).filter(
-        learner=user
-    ) | Mentorship.objects.filter(
-        status='COMPLETED',
-        mentor=user
-    )
-    completed_mentorships = completed_mentorships.select_related('mentor__profile', 'learner__profile', 'progress').distinct()
-
-    context = {
-        'active_mentorships': active_mentorships,
-        'incoming_requests': incoming_requests,
-        'outgoing_requests': outgoing_requests,
-        'completed_mentorships': completed_mentorships,
-        'has_pending_incoming': incoming_requests.exists(),
-        'total_active_count': active_mentorships.count(),
-    }
-    return render(request, 'mentorship/mentorship_list.html', context)
+def process_request(request, mentorship_id, action):
+    mentorship = get_object_or_404(Mentorship, pk=mentorship_id)
+    owner_id = mentorship.learner_id if action == 'CANCELLED' else mentorship.mentor_id
+    if owner_id != request.user.pk:
+        return HttpResponseForbidden('Only the appropriate participant can process this request.')
+    try:
+        mentorship = transition_request(mentorship_id, request.user, action)
+    except ValidationError as error:
+        show_errors(request, error)
+    else:
+        messages.success(request, 'Request accepted.' if action == 'ACTIVE' else 'Request closed and credits refunded.')
+        if action == 'ACTIVE':
+            return workspace_redirect(mentorship)
+    return redirect('mentorship_list')
 
 
 @login_required
+@require_POST
 def accept_mentorship_view(request, mentorship_id):
-    """Accept an incoming pending mentorship request (Mentor only)."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id, mentor=request.user)
-
-    if mentorship.status == 'PENDING':
-        mentorship.status = 'ACTIVE'
-        mentorship.start_date = timezone.now().date()
-        mentorship.save()
-
-        # Initialize progress tracker
-        progress, _ = Progress.objects.get_or_create(mentorship=mentorship)
-        progress.recalculate()
-
-        # Create default welcome discussion post
-        DiscussionPost.objects.create(
-            mentorship=mentorship,
-            author=request.user,
-            text=f"Welcome to our mentorship! I have accepted your request and look forward to collaborating towards your goals: '{mentorship.goals}'."
-        )
-
-        send_notification(
-            user=mentorship.learner,
-            message=f"{mentorship.mentor.get_full_name() or mentorship.mentor.username} accepted your mentorship request! Workspace is now open.",
-            type='REQUEST_ACCEPTED',
-            link=reverse('mentorship_workspace', args=[mentorship.id])
-        )
-
-        messages.success(request, f"Mentorship with {mentorship.learner.get_full_name() or mentorship.learner.username} is now ACTIVE! Welcome to the workspace.")
-        return redirect('mentorship_workspace', mentorship_id=mentorship.id)
-
-    messages.warning(request, f"Mentorship request is already {mentorship.status.lower()}.")
-    return redirect('mentorship_list')
+    return process_request(request, mentorship_id, 'ACTIVE')
 
 
 @login_required
+@require_POST
 def reject_mentorship_view(request, mentorship_id):
-    """Decline an incoming pending mentorship request (Mentor only)."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id, mentor=request.user)
-
-    if mentorship.status == 'PENDING':
-        mentorship.status = 'REJECTED'
-        mentorship.save()
-        CreditService.refund_for_request(mentorship)
-        send_notification(
-            user=mentorship.learner,
-            message=f"Your mentorship request to {mentorship.mentor.get_full_name() or mentorship.mentor.username} was declined. Credits were refunded.",
-            type='REQUEST_REJECTED',
-            link=reverse('mentorship_list')
-        )
-        messages.info(request, f"Mentorship request from {mentorship.learner.username} was declined and credits were refunded.")
-
-    return redirect('mentorship_list')
+    return process_request(request, mentorship_id, 'REJECTED')
 
 
 @login_required
+@require_POST
 def cancel_mentorship_view(request, mentorship_id):
-    """Cancel an outgoing pending mentorship request (Learner only)."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id, learner=request.user)
-
-    if mentorship.status == 'PENDING':
-        mentorship.status = 'CANCELLED'
-        mentorship.save()
-        CreditService.refund_for_request(mentorship)
-        messages.info(request, "Your mentorship request was cancelled and your credits were refunded.")
-
-    return redirect('mentorship_list')
+    return process_request(request, mentorship_id, 'CANCELLED')
 
 
 @login_required
 def mentorship_workspace_view(request, mentorship_id):
-    """Collaborative Mentorship Hub for participants (Sessions, Milestones, Resources, Discussions)."""
-    mentorship = get_object_or_404(
-        Mentorship.objects.select_related('mentor__profile', 'learner__profile', 'progress'),
-        id=mentorship_id
-    )
-
-    # Permission check
+    mentorship = get_object_or_404(Mentorship.objects.select_related('mentor__profile', 'learner__profile', 'progress'), pk=mentorship_id)
     if not mentorship.can_access(request.user):
-        return HttpResponseForbidden("You are not an authorized participant in this mentorship.")
-
-    # Ensure progress record exists
+        return HttpResponseForbidden('This workspace is private to its participants.')
     progress, _ = Progress.objects.get_or_create(mentorship=mentorship)
-    progress.recalculate()
-
-    # Forms for modals / tabs
-    session_form = SessionForm()
-    milestone_form = MilestoneForm()
-    resource_form = ResourceForm()
-    discussion_form = DiscussionPostForm()
-    feedback_form = FeedbackForm()
-
-    # Content
     sessions = mentorship.sessions.all().order_by('date')
     milestones = mentorship.milestones.all().order_by('id')
-    resources = mentorship.resources.all().order_by('-created_at')
-    discussion_posts = mentorship.discussion_posts.all().select_related('author').order_by('created_at')
-    feedbacks = mentorship.feedbacks.all().select_related('given_by', 'given_to').order_by('-created_at')
-    has_given_feedback = mentorship.feedbacks.filter(given_by=request.user).exists()
+    return render(request, 'mentorship/workspace.html', {
+        'mentorship': mentorship, 'progress': progress,
+        'sessions': sessions, 'milestones': milestones,
+        'resources': mentorship.resources.select_related('uploaded_by').all(),
+        'discussion_posts': mentorship.discussion_posts.select_related('author').all(),
+        'feedbacks': mentorship.feedbacks.select_related('given_by', 'given_to').all(),
+        'has_given_feedback': mentorship.feedbacks.filter(given_by=request.user).exists(),
+        'completed_milestones': milestones.filter(is_completed=True).count(),
+        'completed_sessions': sessions.filter(is_completed=True, is_cancelled=False).count(),
+        'session_form': SessionForm(auto_id='session_%s'), 'milestone_form': MilestoneForm(auto_id='milestone_%s'),
+        'resource_form': ResourceForm(auto_id='resource_%s'), 'discussion_form': DiscussionPostForm(auto_id='discussion_%s'), 'feedback_form': FeedbackForm(),
+        'is_mentor': request.user.pk == mentorship.mentor_id,
+        'is_learner': request.user.pk == mentorship.learner_id,
+        'can_review': request.user.pk in [mentorship.mentor_id, mentorship.learner_id] and mentorship.status in ['ACTIVE', 'COMPLETED'],
+        'editable': mentorship.status == 'ACTIVE' and request.user.pk in [mentorship.mentor_id, mentorship.learner_id],
+        'completion_errors': completion_errors(mentorship) if mentorship.status == 'ACTIVE' else [],
+    })
 
-    # Completed metrics
-    completed_milestones = milestones.filter(is_completed=True).count()
-    completed_sessions = sessions.filter(is_completed=True).count()
 
-    context = {
-        'mentorship': mentorship,
-        'progress': progress,
-        'sessions': sessions,
-        'milestones': milestones,
-        'resources': resources,
-        'discussion_posts': discussion_posts,
-        'feedbacks': feedbacks,
-        'has_given_feedback': has_given_feedback,
-        'completed_milestones': completed_milestones,
-        'completed_sessions': completed_sessions,
-        'session_form': session_form,
-        'milestone_form': milestone_form,
-        'resource_form': resource_form,
-        'discussion_form': discussion_form,
-        'feedback_form': feedback_form,
-        'is_mentor': request.user == mentorship.mentor,
-        'is_learner': request.user == mentorship.learner,
-    }
-    return render(request, 'mentorship/workspace.html', context)
+def edit_form_response(request, mentorship, form, title):
+    return render(request, 'mentorship/edit_item.html', {'form': form, 'title': title, 'mentorship': mentorship,
+        'mentor_slots': mentorship.mentor.availability_slots.all()})
 
 
 @login_required
 def session_add_view(request, mentorship_id):
-    """Schedule a new mentorship session."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id)
-    if not mentorship.can_access(request.user):
-        return HttpResponseForbidden()
-
-    if request.method == 'POST':
-        form = SessionForm(request.POST)
-        if form.is_valid():
-            session = form.save(commit=False)
-            session.mentorship = mentorship
-            session.save()
-            mentorship.progress.recalculate()
-
-            other_user = mentorship.learner if request.user == mentorship.mentor else mentorship.mentor
-            send_notification(
-                user=other_user,
-                message=f"{request.user.get_full_name() or request.user.username} scheduled a new session for {session.date.strftime('%b %d at %I:%M %p')}.",
-                type='SESSION_LOGGED',
-                link=reverse('mentorship_workspace', args=[mentorship.id])
-            )
-
-            messages.success(request, f"New session scheduled for {session.date.strftime('%b %d, %Y at %I:%M %p')}.")
-        else:
-            messages.error(request, "Failed to schedule session. Please verify date format.")
-
-    return redirect('mentorship_workspace', mentorship_id=mentorship.id)
+    return session_editor(request, get_object_or_404(Mentorship, pk=mentorship_id))
 
 
 @login_required
+def session_edit_view(request, session_id):
+    session = get_object_or_404(Session.objects.select_related('mentorship'), pk=session_id)
+    return session_editor(request, session.mentorship, session)
+
+
+def session_editor(request, mentorship, session=None):
+    if request.user.pk not in [mentorship.mentor_id, mentorship.learner_id] or mentorship.status != 'ACTIVE':
+        return HttpResponseForbidden('Sessions can only be changed by participants in an active mentorship.')
+    if session and (session.is_completed or session.is_cancelled):
+        return HttpResponseForbidden('Completed or cancelled sessions cannot be edited.')
+    form = SessionForm(request.POST if request.method == 'POST' else None, instance=session)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            save_session(form, mentorship, request.user)
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, 'Session saved. Times are shown in your profile time zone.')
+            return workspace_redirect(mentorship)
+    return edit_form_response(request, mentorship, form, 'Reschedule session' if session else 'Schedule session')
+
+
+@login_required
+@require_POST
+@retry_database_lock
+@transaction.atomic
 def session_toggle_view(request, session_id):
-    """Toggle a session's completion status."""
-    session = get_object_or_404(Session, id=session_id)
-    if not session.mentorship.can_access(request.user):
+    original = get_object_or_404(Session, pk=session_id)
+    lock_participants(original.mentorship.mentor_id, original.mentorship.learner_id)
+    session = Session.objects.select_for_update().select_related('mentorship').get(pk=session_id)
+    if request.user.pk != session.mentorship.mentor_id or session.mentorship.status != 'ACTIVE':
+        return HttpResponseForbidden('Only the mentor can confirm completed sessions in an active mentorship.')
+    if session.is_cancelled or session.date + timedelta(minutes=session.duration_minutes) > timezone.now():
+        messages.error(request, 'Only sessions that have ended and are not cancelled can be completed.')
+        return workspace_redirect(session.mentorship)
+    if not session.is_completed:
+        session.is_completed = True
+        session.save(update_fields=['is_completed'])
+        awarded = CreditService.reward_mentor_for_session(session)
+        messages.success(request, 'Session completed.' + (' Mentor earned 10 credits.' if awarded else ''))
+        send_notification(session.mentorship.learner, 'Your mentor confirmed the session as completed.',
+            'SESSION_LOGGED', reverse('mentorship_workspace', args=[session.mentorship_id]))
+    progress, _ = Progress.objects.get_or_create(mentorship=session.mentorship)
+    progress.recalculate()
+    return workspace_redirect(session.mentorship)
+
+
+@login_required
+@require_POST
+@retry_database_lock
+@transaction.atomic
+def session_cancel_view(request, session_id):
+    original = get_object_or_404(Session, pk=session_id)
+    lock_participants(original.mentorship.mentor_id, original.mentorship.learner_id)
+    session = Session.objects.select_for_update().select_related('mentorship').get(pk=session_id)
+    mentorship = session.mentorship
+    if request.user.pk not in [mentorship.mentor_id, mentorship.learner_id] or mentorship.status != 'ACTIVE':
         return HttpResponseForbidden()
-
-    session.is_completed = not session.is_completed
-    session.save()
-    session.mentorship.progress.recalculate()
-
     if session.is_completed:
-        CreditService.reward_mentor_for_session(session)
-        other_user = session.mentorship.learner if request.user == session.mentorship.mentor else session.mentorship.mentor
-        send_notification(
-            user=other_user,
-            message=f"Session on {session.date.strftime('%b %d')} was marked as completed.",
-            type='SESSION_LOGGED',
-            link=reverse('mentorship_workspace', args=[session.mentorship.id])
-        )
-        send_notification(
-            user=session.mentorship.mentor,
-            message="You earned +10 credits for completing a meeting session!",
-            type='SESSION_LOGGED',
-            link=reverse('wallet')
-        )
-        messages.success(request, "Session marked as completed! Mentor awarded +10 credits.")
-    else:
-        messages.success(request, "Session marked as incomplete.")
-    return redirect('mentorship_workspace', mentorship_id=session.mentorship.id)
+        messages.error(request, 'Completed sessions cannot be cancelled.')
+    elif not session.is_cancelled:
+        session.is_cancelled = True
+        session.save(update_fields=['is_cancelled'])
+        other = mentorship.learner if request.user.pk == mentorship.mentor_id else mentorship.mentor
+        send_notification(other, 'A scheduled session was cancelled.', 'SESSION_LOGGED', reverse('mentorship_workspace', args=[mentorship.pk]))
+        progress, _ = Progress.objects.get_or_create(mentorship=mentorship)
+        progress.recalculate()
+        messages.success(request, 'Session cancelled. It no longer blocks scheduling or completion.')
+    return workspace_redirect(mentorship)
 
 
 @login_required
 def milestone_add_view(request, mentorship_id):
-    """Add a new milestone to the mentorship checklist."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id)
-    if not mentorship.can_access(request.user):
-        return HttpResponseForbidden()
-
-    if request.method == 'POST':
-        form = MilestoneForm(request.POST)
-        if form.is_valid():
-            milestone = form.save(commit=False)
-            milestone.mentorship = mentorship
-            milestone.save()
-            mentorship.progress.recalculate()
-            messages.success(request, f"Added milestone: '{milestone.title}'")
-
-    return redirect('mentorship_workspace', mentorship_id=mentorship.id)
+    return milestone_editor(request, get_object_or_404(Mentorship, pk=mentorship_id))
 
 
 @login_required
+def milestone_edit_view(request, milestone_id):
+    milestone = get_object_or_404(Milestone.objects.select_related('mentorship'), pk=milestone_id)
+    return milestone_editor(request, milestone.mentorship, milestone)
+
+
+def milestone_editor(request, mentorship, milestone=None):
+    if request.user.pk not in [mentorship.mentor_id, mentorship.learner_id] or mentorship.status != 'ACTIVE':
+        return HttpResponseForbidden('Milestones can only be changed in active mentorships.')
+    form = MilestoneForm(request.POST if request.method == 'POST' else None, instance=milestone)
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            lock_participants(mentorship.mentor_id, mentorship.learner_id)
+            mentorship.refresh_from_db()
+            if mentorship.status != 'ACTIVE':
+                return HttpResponseForbidden('This mentorship is no longer active.')
+            item = form.save(commit=False)
+            item.mentorship = mentorship
+            item.save()
+            progress, _ = Progress.objects.get_or_create(mentorship=mentorship)
+            progress.recalculate()
+        messages.success(request, 'Milestone saved.')
+        return workspace_redirect(mentorship)
+    return edit_form_response(request, mentorship, form, 'Edit milestone' if milestone else 'Add milestone')
+
+
+@login_required
+@require_POST
+@retry_database_lock
+@transaction.atomic
 def milestone_toggle_view(request, milestone_id):
-    """Toggle completion status of a milestone."""
-    milestone = get_object_or_404(Milestone, id=milestone_id)
-    if not milestone.mentorship.can_access(request.user):
+    original = get_object_or_404(Milestone, pk=milestone_id)
+    lock_participants(original.mentorship.mentor_id, original.mentorship.learner_id)
+    item = Milestone.objects.select_for_update().select_related('mentorship').get(pk=milestone_id)
+    if request.user.pk not in [item.mentorship.mentor_id, item.mentorship.learner_id] or item.mentorship.status != 'ACTIVE':
         return HttpResponseForbidden()
-
-    milestone.is_completed = not milestone.is_completed
-    milestone.completed_at = timezone.now() if milestone.is_completed else None
-    milestone.save()
-    pct = milestone.mentorship.progress.recalculate()
-
-    messages.success(request, f"Milestone updated! Progress is now {pct}%.")
-    return redirect('mentorship_workspace', mentorship_id=milestone.mentorship.id)
+    item.is_completed = not item.is_completed
+    item.completed_at = timezone.now() if item.is_completed else None
+    item.save()
+    progress, _ = Progress.objects.get_or_create(mentorship=item.mentorship)
+    progress.recalculate()
+    return workspace_redirect(item.mentorship)
 
 
 @login_required
 def resource_add_view(request, mentorship_id):
-    """Upload or share a link/file/note in the workspace."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id)
-    if not mentorship.can_access(request.user):
-        return HttpResponseForbidden()
-
-    if request.method == 'POST':
-        form = ResourceForm(request.POST, request.FILES)
-        if form.is_valid():
-            resource = form.save(commit=False)
-            resource.mentorship = mentorship
-            resource.uploaded_by = request.user
-            resource.save()
-            BadgeService.check_and_award_badges(request.user)
-            LeaderboardService.recalculate_leaderboard()
-            messages.success(request, f"Shared resource: '{resource.title}' ({resource.type}).")
-        else:
-            for field, errs in form.errors.items():
-                for e in errs:
-                    messages.error(request, f"{field.capitalize()}: {e}")
-
-    return redirect('mentorship_workspace', mentorship_id=mentorship.id)
+    return add_workspace_item(request, mentorship_id, ResourceForm, 'Share resource', 'resource')
 
 
 @login_required
 def discussion_post_view(request, mentorship_id):
-    """Post an asynchronous message to the mentorship pair."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id)
-    if not mentorship.can_access(request.user):
-        return HttpResponseForbidden()
+    return add_workspace_item(request, mentorship_id, DiscussionPostForm, 'Post a discussion message', 'discussion')
 
-    if request.method == 'POST':
-        form = DiscussionPostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.mentorship = mentorship
-            post.author = request.user
-            post.save()
-            messages.success(request, "Message posted to discussion thread.")
 
-    return redirect('mentorship_workspace', mentorship_id=mentorship.id)
+def add_workspace_item(request, mentorship_id, form_class, title, kind):
+    mentorship = get_object_or_404(Mentorship, pk=mentorship_id)
+    if request.user.pk not in [mentorship.mentor_id, mentorship.learner_id] or mentorship.status != 'ACTIVE':
+        return HttpResponseForbidden('This workspace is read-only.')
+    form = form_class(request.POST if request.method == 'POST' else None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            lock_participants(mentorship.mentor_id, mentorship.learner_id)
+            mentorship.refresh_from_db()
+            if mentorship.status != 'ACTIVE':
+                return HttpResponseForbidden('This workspace is read-only.')
+            item = form.save(commit=False)
+            item.mentorship = mentorship
+            if kind == 'resource':
+                item.uploaded_by = request.user
+            else:
+                item.author = request.user
+            item.save()
+            if kind == 'resource':
+                BadgeService.check_and_award_badges(request.user)
+            else:
+                other = mentorship.learner if request.user.pk == mentorship.mentor_id else mentorship.mentor
+                send_notification(other, f'{request.user.get_full_name() or request.user.username} posted a discussion message.',
+                    'DISCUSSION', reverse('mentorship_workspace', args=[mentorship.pk]))
+        messages.success(request, 'Resource shared.' if kind == 'resource' else 'Message posted.')
+        return workspace_redirect(mentorship)
+    return edit_form_response(request, mentorship, form, title)
 
 
 @login_required
+@require_POST
 def mentorship_complete_view(request, mentorship_id):
-    """Finalize and complete an active mentorship."""
-    mentorship = get_object_or_404(Mentorship, id=mentorship_id)
-    if not mentorship.can_access(request.user):
+    mentorship = get_object_or_404(Mentorship, pk=mentorship_id)
+    if request.user.pk != mentorship.mentor_id:
+        return HttpResponseForbidden('Only the mentor can issue a certificate.')
+    try:
+        complete_mentorship(mentorship_id, request.user)
+    except ValidationError as error:
+        show_errors(request, error)
+        return workspace_redirect(mentorship)
+    messages.success(request, 'Mentorship completed and certificate issued.')
+    return redirect('mentorship_certificate', mentorship_id=mentorship.pk)
+
+
+@login_required
+def resource_download_view(request, resource_id):
+    resource = get_object_or_404(Resource.objects.select_related('mentorship'), pk=resource_id, type='FILE')
+    if not resource.mentorship.can_access(request.user):
         return HttpResponseForbidden()
+    if not resource.file:
+        return HttpResponse(status=404)
+    try:
+        return FileResponse(resource.file.open('rb'), as_attachment=True, filename=resource.file.name.rsplit('/', 1)[-1])
+    except FileNotFoundError:
+        return HttpResponse('This file is unavailable.', status=404)
 
-    if mentorship.status == 'ACTIVE':
-        mentorship.status = 'COMPLETED'
-        mentorship.end_date = timezone.now().date()
-        mentorship.save()
-        mentorship.progress.recalculate()
 
-        # Check badges for both parties & refresh leaderboard
-        BadgeService.check_and_award_badges(mentorship.mentor)
-        BadgeService.check_and_award_badges(mentorship.learner)
-        LeaderboardService.recalculate_leaderboard()
+def ics_escape(value):
+    return value.replace('\\', '\\\\').replace('\n', '\\n').replace(';', '\\;').replace(',', '\\,').replace('\r', '')
 
-        send_notification(
-            user=mentorship.learner,
-            message=f"Congratulations! Mentorship with {mentorship.mentor.get_full_name() or mentorship.mentor.username} is COMPLETED! Certificate unlocked.",
-            type='SESSION_LOGGED',
-            link=reverse('mentorship_certificate', args=[mentorship.id])
-        )
-        send_notification(
-            user=mentorship.mentor,
-            message=f"Mentorship with {mentorship.learner.get_full_name() or mentorship.learner.username} is COMPLETED. Thank you for guiding your learner!",
-            type='SESSION_LOGGED',
-            link=reverse('mentorship_workspace', args=[mentorship.id])
-        )
 
-        messages.success(request, "Congratulations! This mentorship has been marked as COMPLETED. Your certificate is now unlocked!")
-        return redirect('mentorship_certificate', mentorship_id=mentorship.id)
+@login_required
+def session_calendar_view(request, session_id):
+    session = get_object_or_404(Session.objects.select_related('mentorship'), pk=session_id)
+    if not session.mentorship.can_access(request.user):
+        return HttpResponseForbidden()
+    def stamp(date):
+        return date.astimezone(datetime_timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+    lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MentorPulse//Sessions//EN', 'METHOD:PUBLISH',
+        'BEGIN:VEVENT', f'UID:session-{session.pk}@mentorpulse', f'DTSTAMP:{stamp(timezone.now())}',
+        f'DTSTART:{stamp(session.date)}', f'DTEND:{stamp(session.date + timedelta(minutes=session.duration_minutes))}',
+        f'SUMMARY:{ics_escape("MentorPulse mentorship session")}',
+        f'DESCRIPTION:{ics_escape(session.notes)}', f'LOCATION:{ics_escape(session.meeting_link)}',
+        'STATUS:CANCELLED' if session.is_cancelled else 'STATUS:CONFIRMED', 'END:VEVENT', 'END:VCALENDAR']
+    # Fold at UTF-8 byte boundaries, as required by the iCalendar format.
+    folded = []
+    for line in lines:
+        part = ''
+        for char in line:
+            if len((part + char).encode('utf-8')) > 75:
+                folded.append(part)
+                part = ' '
+            part += char
+        folded.append(part)
+    response = HttpResponse('\r\n'.join(folded) + '\r\n', content_type='text/calendar; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="mentorpulse-session-{session.pk}.ics"'
+    return response
 
-    return redirect('mentorship_workspace', mentorship_id=mentorship.id)
+
+def certificate_context(mentorship):
+    return {'mentorship': mentorship, 'credential': mentorship.certificate_data,
+            'learner': mentorship.learner, 'mentor': mentorship.mentor,
+            'completed_milestones': mentorship.milestones.filter(is_completed=True),
+            'shared_skills': mentorship.certificate_data.get('skills', []),
+            'completion_date': mentorship.end_date}
 
 
 @login_required
 def certificate_view(request, mentorship_id):
-    """Print-friendly completion certificate for completed mentorships."""
-    mentorship = get_object_or_404(
-        Mentorship.objects.select_related('mentor__profile', 'learner__profile'),
-        id=mentorship_id
-    )
-
+    mentorship = get_object_or_404(Mentorship.objects.select_related('mentor', 'learner'), pk=mentorship_id)
     if not mentorship.can_access(request.user):
-        return HttpResponseForbidden("You do not have permission to view this certificate.")
+        return HttpResponseForbidden()
+    if mentorship.status != 'COMPLETED' or not mentorship.certificate_id:
+        messages.warning(request, 'A certificate is available once the mentor approves completion.')
+        return workspace_redirect(mentorship)
+    return render(request, 'mentorship/certificate.html', certificate_context(mentorship))
 
-    if mentorship.status != 'COMPLETED':
-        messages.warning(request, "Certificates are only issued for COMPLETED mentorships.")
-        return redirect('mentorship_workspace', mentorship_id=mentorship.id)
 
-    completed_milestones = mentorship.milestones.filter(is_completed=True)
-    shared_skills = set(mentorship.learner.profile.skills.all()) & set(mentorship.mentor.profile.skills.all())
+def certificate_verify_view(request, certificate_id):
+    mentorship = get_object_or_404(Mentorship, certificate_id=certificate_id, status='COMPLETED')
+    return render(request, 'mentorship/verify_certificate.html', certificate_context(mentorship))
 
-    context = {
-        'mentorship': mentorship,
-        'learner': mentorship.learner,
-        'mentor': mentorship.mentor,
-        'completed_milestones': completed_milestones,
-        'shared_skills': shared_skills,
-        'completion_date': mentorship.end_date or timezone.now().date(),
-    }
-    return render(request, 'mentorship/certificate.html', context)
+
+@login_required
+def certificate_pdf_view(request, mentorship_id):
+    from html import escape
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    mentorship = get_object_or_404(Mentorship, pk=mentorship_id, status='COMPLETED', certificate_id__isnull=False)
+    if not mentorship.can_access(request.user):
+        return HttpResponseForbidden()
+    credential = mentorship.certificate_data
+    output = BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=landscape(A4), title='MentorPulse Certificate of Completion',
+        rightMargin=64, leftMargin=64, topMargin=55, bottomMargin=45)
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='CertificateTitle', fontName='Helvetica-Bold', fontSize=26, leading=32, alignment=1, textColor=colors.HexColor('#4338ca')))
+    styles.add(ParagraphStyle(name='CertificateBody', fontSize=13, leading=20, alignment=1, spaceAfter=12))
+    styles.add(ParagraphStyle(name='CertificateSmall', fontSize=9, leading=13, alignment=1))
+    verification = request.build_absolute_uri(reverse('certificate_verify', args=[mentorship.certificate_id]))
+    story = [Paragraph('MENTORPULSE', styles['CertificateSmall']), Spacer(1, 18),
+        Paragraph('Certificate of Completion', styles['CertificateTitle']), Spacer(1, 24),
+        Paragraph('Awarded to', styles['CertificateBody']),
+        Paragraph(escape(credential.get('learner', '')), styles['CertificateTitle']), Spacer(1, 18),
+        Paragraph('For completing a mentorship guided by ' + escape(credential.get('mentor', '')), styles['CertificateBody']),
+        Paragraph('Completed on ' + escape(credential.get('date', '')), styles['CertificateBody']),
+        Paragraph('Skills: ' + escape(', '.join(credential.get('skills', [])) or 'Personal learning roadmap'), styles['CertificateBody']),
+        Spacer(1, 20), Paragraph('Certificate ID: ' + str(mentorship.certificate_id), styles['CertificateSmall']),
+        Paragraph('Verify: ' + escape(verification), styles['CertificateSmall'])]
+    doc.build(story)
+    output.seek(0)
+    return FileResponse(output, as_attachment=True, filename=f'mentorpulse-certificate-{mentorship.certificate_id}.pdf')

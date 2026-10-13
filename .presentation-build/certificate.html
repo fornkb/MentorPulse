@@ -1,0 +1,616 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MentorPulse — Skill-based mentor matching and progress tracking platform.">
+    <title>Certificate of Completion — Priya Sharma — MentorPulse</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/.presentation-build/bootstrap.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/.presentation-build/icons.css">
+    <!-- Custom Design System -->
+    <link rel="stylesheet" href="file:///C:/Users/babur/OneDrive/Desktop/MentorPulse/MentorPulse/static/css/main.css">
+    
+<style>
+.cert-frame {
+    background: #0f172a;
+    border: 8px double rgba(245, 158, 11, 0.6);
+    border-radius: 16px;
+    position: relative;
+    padding: 3.5rem 3rem;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.8), 0 0 35px rgba(245, 158, 11, 0.15);
+}
+
+.cert-frame::before {
+    content: "";
+    position: absolute;
+    top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+.cert-title {
+    font-size: 2.35rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.cert-recipient {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #f8fafc;
+    border-bottom: 2px solid rgba(245, 158, 11, 0.4);
+    display: inline-block;
+    padding: 0.25rem 2rem;
+    margin: 1rem 0;
+}
+
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    .mp-navbar, .mp-footer, .no-print {
+        display: none !important;
+    }
+    .cert-frame {
+        box-shadow: none !important;
+        border-color: #b45309 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        page-break-inside: avoid;
+    }
+    .cert-frame::before {
+        border-color: #d97706 !important;
+    }
+    .cert-title {
+        color: #b45309 !important;
+        -webkit-text-fill-color: initial !important;
+    }
+    .cert-recipient {
+        color: #0f172a !important;
+        border-color: #b45309 !important;
+    }
+    .text-light {
+        color: #0f172a !important;
+    }
+    .text-muted {
+        color: #475569 !important;
+    }
+}
+</style>
+
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="mp-navbar navbar navbar-expand-lg">
+        <div class="container">
+            <a class="mp-brand" href="/">
+                <span class="mp-brand-logo">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </span>
+                <span class="mp-brand-text">MentorPulse</span>
+                <span class="mp-brand-badge">v1.0 Ready</span>
+            </a>
+
+            <button class="navbar-toggler border-0 text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto ms-lg-4 mb-2 mb-lg-0">
+                    
+                        <li class="nav-item">
+                            <a class="nav-link " href="/">
+                                <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/mentorships/">
+                                <i class="bi bi-chat-square-heart-fill me-1"></i> Mentorships
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/mentors/">
+                                <i class="bi bi-compass-fill me-1"></i> Find Mentors
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/leaderboard/">
+                                <i class="bi bi-trophy-fill me-1"></i> Leaderboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/badges/">
+                                <i class="bi bi-award-fill me-1"></i> Badges
+                            </a>
+                        </li>
+                    
+                </ul>
+
+                <div class="d-flex align-items-center gap-2">
+                    
+                        <!-- One-Click Instant Demo User Switcher -->
+                        <div class="dropdown me-1">
+                            <button class="mp-btn mp-btn-secondary mp-btn-sm dropdown-toggle d-flex align-items-center gap-1 border-warning text-warning" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Instant Demo Role / User Switcher">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                                <span class="d-none d-md-inline fw-semibold">Demo Switcher</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu shadow-lg py-2" style="min-width: 280px; max-height: 480px; overflow-y: auto;">
+                                <li class="px-3 py-1 text-uppercase font-monospace text-warning small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-shield-lock me-1"></i> Administrators
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/1/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem;">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">System Administrator</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@admin</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+
+                                <li class="dropdown-divider my-1 border-secondary border-opacity-25"></li>
+                                <li class="px-3 py-1 text-uppercase font-monospace text-info small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-patch-check-fill me-1"></i> Mentors
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/2/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">S</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Sarah Connor</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@sarah_backend</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/3/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">M</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Marcus Vance</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@marcus_frontend</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/4/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">D</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Elena Rostova</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@dr_elena</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/5/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Alex Morgan</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@alex_design</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/6/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);">D</span>
+                                                <div>
+                                                    <div class="small fw-semibold">David Kim</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@david_devops</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+
+                                <li class="dropdown-divider my-1 border-secondary border-opacity-25"></li>
+                                <li class="px-3 py-1 text-uppercase font-monospace text-cyan small fw-bold" style="font-size: 0.7rem;">
+                                    <i class="bi bi-book-fill me-1"></i> Learners
+                                </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/7/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">A</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Alex Rivera</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@alex_learner</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 active bg-primary bg-opacity-25 text-primary fw-bold" href="/switch-user/8/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">P</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Priya Sharma</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@priya_learner</div>
+                                                </div>
+                                            </div>
+                                            <i class="bi bi-check2 text-success fs-6"></i>
+                                        </a>
+                                    </li>
+                                
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between py-2 " href="/switch-user/9/?next=/mentorships/2/certificate/">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="mp-user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">J</span>
+                                                <div>
+                                                    <div class="small fw-semibold">Jordan Lee</div>
+                                                    <div class="font-monospace text-muted" style="font-size: 0.68rem;">@jordan_learner</div>
+                                                </div>
+                                            </div>
+                                            
+                                        </a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+                    
+
+                    
+                        <!-- Notification Bell Dropdown -->
+                        <div class="dropdown me-1">
+                            <button class="btn btn-dark border border-secondary border-opacity-25 text-light position-relative rounded-pill px-2 py-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                                <i class="bi bi-bell-fill fs-6"></i>
+                                
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25em 0.5em;">
+                                        4
+                                        <span class="visually-hidden">unread notifications</span>
+                                    </span>
+                                
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu shadow-lg p-0" style="width: 330px; max-height: 440px; overflow-y: auto;">
+                                <li class="px-3 py-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between bg-dark bg-opacity-50">
+                                    <span class="fw-bold text-light small">
+                                        <i class="bi bi-bell me-1"></i> Notifications
+                                    </span>
+                                    
+                                        <a href="/notifications/mark-all-read/" class="small text-decoration-none text-primary fw-medium" style="font-size: 0.75rem;">
+                                            Mark all read
+                                        </a>
+                                    
+                                </li>
+                                
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/21/read/">
+                                                <i class="bi bi-star-fill text-warning mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        You received a 5-star rating and review from Marcus Vance!
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/20/read/">
+                                                <i class="bi bi-calendar-event-fill text-info mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        Congratulations! Mentorship with Marcus Vance is COMPLETED! Certificate unlocked.
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/12/read/">
+                                                <i class="bi bi-award-fill text-purple mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        🏆 Achievement Unlocked: You earned the &#x27;Top Rated&#x27; badge!
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                        <li class="border-bottom border-secondary border-opacity-15">
+                                            <a class="dropdown-item py-2 px-3 d-flex align-items-start gap-2 text-wrap bg-primary bg-opacity-10" href="/notifications/11/read/">
+                                                <i class="bi bi-award-fill text-purple mt-1 flex-shrink-0"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="small text-light fw-semibold" style="line-height: 1.35; font-size: 0.82rem;">
+                                                        🏆 Achievement Unlocked: You earned the &#x27;First Steps&#x27; badge!
+                                                    </div>
+                                                    <div class="text-muted font-monospace" style="font-size: 0.68rem;">
+                                                        5 days, 13 hours ago
+                                                    </div>
+                                                </div>
+                                                
+                                                    <span class="badge rounded-pill bg-primary p-1 flex-shrink-0 mt-1" style="width: 7px; height: 7px;"></span>
+                                                
+                                            </a>
+                                        </li>
+                                    
+                                
+                                <li class="text-center p-2 bg-dark bg-opacity-50 border-top border-secondary border-opacity-25">
+                                    <a href="/notifications/" class="small text-primary text-decoration-none fw-semibold">
+                                        View All Notifications <i class="bi bi-arrow-right small"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- User Credit Balance Pill -->
+                        <a href="/wallet/" class="mp-credit-pill me-1" title="Credit Wallet — View & Earn Credits">
+                            <i class="bi bi-coin"></i>
+                            <span>40</span>
+                            <span class="d-none d-sm-inline opacity-75">Credits</span>
+                        </a>
+
+                        <!-- Active Role Indicators -->
+                        <div class="d-none d-xl-flex align-items-center gap-1 me-2">
+                            
+                            
+                                <span class="mp-badge role-badge-learner" title="Active Learner Role">
+                                    <i class="bi bi-book-fill"></i> Learner
+                                </span>
+                            
+                            
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn p-0 border-0 d-flex align-items-center gap-2 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="mp-user-avatar">
+                                    P
+                                </span>
+                                <span class="text-light fw-semibold small d-none d-sm-inline">
+                                    priya_learner
+                                </span>
+                                <i class="bi bi-chevron-down text-muted small"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end mp-dropdown-menu">
+                                <li class="px-3 py-2 border-bottom border-secondary border-opacity-25">
+                                    <div class="fw-bold text-light">Priya Sharma</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 180px;">priya.sharma@mentorpulse.local</div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item mt-1" href="/wallet/">
+                                        <i class="bi bi-coin text-warning"></i> My Wallet
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/profile/">
+                                        <i class="bi bi-person"></i> View Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/badges/">
+                                        <i class="bi bi-award text-info"></i> My Badges
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/profile/edit/">
+                                        <i class="bi bi-sliders"></i> Edit Profile & Skills
+                                    </a>
+                                </li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="/logout/">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="UWmBrFi3RLgtqS0ENnaukIluMgjtTcrY0t5PKpur6rICZZyDdo5vJVnpH6pzCU8E">
+                                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                                            <i class="bi bi-box-arrow-right"></i> Sign Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Global Messages Toast / Alert Container -->
+    <div class="container mt-3">
+        
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1">
+        
+<div class="container py-5">
+
+    <!-- Action Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <a href="/mentorships/2/" class="mp-btn mp-btn-secondary mp-btn-sm">
+            <i class="bi bi-arrow-left"></i> Return to Workspace
+        </a>
+        <button onclick="window.print()" class="mp-btn mp-btn-primary mp-btn-sm">
+            <i class="bi bi-printer-fill me-1"></i> Print / Save as PDF
+        </button>
+    </div>
+
+    <!-- Certificate Document Surface -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-11">
+            <div class="cert-frame text-center">
+
+                <!-- Crest / Logo -->
+                <div class="mb-3">
+                    <div class="mp-brand-logo mx-auto shadow" style="width: 60px; height: 60px; font-size: 1.85rem; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="bi bi-award-fill text-dark"></i>
+                    </div>
+                </div>
+
+                <div class="text-uppercase small fw-bold font-monospace mb-1" style="color: #fbbf24; letter-spacing: 0.2em;">
+                    MentorPulse Verified Credential
+                </div>
+                <h1 class="cert-title mb-3">Certificate of Completion</h1>
+
+                <p class="text-muted small mb-1">THIS PROUDLY CERTIFIES THAT</p>
+                <div class="cert-recipient font-sans">
+                    Priya Sharma
+                </div>
+
+                <p class="text-light mx-auto my-3" style="max-width: 680px; line-height: 1.8; font-size: 1.05rem;">
+                    has successfully concluded the intensive, milestone-driven mentorship program under the expert guidance and evaluation of mentor 
+                    <strong class="text-warning">Marcus Vance</strong>, 
+                    fulfilling target competencies and collaborative learning objectives.
+                </p>
+
+                <!-- Competencies & Skills -->
+                
+                    <div class="my-4">
+                        <div class="text-uppercase font-monospace small text-muted mb-2">Verified Competency Focus Areas:</div>
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            
+                                <span class="mp-skill-tag selected py-1 px-3">
+                                    <i class="bi bi-patch-check-fill text-warning me-1"></i> UI/UX Design
+                                </span>
+                            
+                                <span class="mp-skill-tag selected py-1 px-3">
+                                    <i class="bi bi-patch-check-fill text-warning me-1"></i> JavaScript
+                                </span>
+                            
+                                <span class="mp-skill-tag selected py-1 px-3">
+                                    <i class="bi bi-patch-check-fill text-warning me-1"></i> React
+                                </span>
+                            
+                        </div>
+                    </div>
+                
+
+                <!-- Milestones summary pill -->
+                <div class="my-4">
+                    <span class="badge px-3 py-2 bg-dark border border-secondary text-light font-monospace small">
+                        <i class="bi bi-check2-all text-success me-1"></i>
+                        3 Roadmap Milestones Completed • 100% Progress Score
+                    </span>
+                </div>
+
+                <!-- Signatures & Verification Row -->
+                <div class="row pt-5 mt-4 border-top border-secondary border-opacity-25 text-center text-sm-start align-items-end">
+                    <div class="col-12 col-sm-4 mb-3 mb-sm-0">
+                        <div class="fw-bold text-light pb-1 border-bottom border-secondary border-opacity-50" style="font-size: 1.1rem;">
+                            Marcus Vance
+                        </div>
+                        <div class="small text-muted font-monospace mt-1">Lead Mentor</div>
+                    </div>
+
+                    <div class="col-12 col-sm-4 mb-3 mb-sm-0 text-center">
+                        <div class="text-warning fs-3 mb-1"><i class="bi bi-shield-check"></i></div>
+                        <div class="font-monospace small text-muted" style="font-size: 0.72rem;">
+                            CREDENTIAL ID<br>
+                            <span class="text-light">MP-2-20261004</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-4 text-sm-end">
+                        <div class="fw-bold text-light pb-1 border-bottom border-secondary border-opacity-50" style="font-size: 1.1rem;">
+                            October 04, 2026
+                        </div>
+                        <div class="small text-muted font-monospace mt-1">Date of Completion</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mp-footer">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center text-md-start">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-light">MentorPulse</span>
+                <span>— Skill-based Mentor Matching & Progress Tracking</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-dark border border-secondary text-secondary font-monospace" style="font-size: 0.72rem;">
+                    <i class="bi bi-hdd-network"></i> Local SQLite Build
+                </span>
+                <span class="small text-muted">&copy; 2026 MentorPulse</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+        <div id="mpToast" class="toast align-items-center text-bg-dark border border-primary border-opacity-50 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" id="mpToastBody">
+                    <i class="bi bi-check-circle-fill text-success fs-5" id="mpToastIcon"></i>
+                    <span id="mpToastText" class="fw-medium small">Action completed successfully.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.showToast = function(message, iconClass = 'bi-check-circle-fill text-success') {
+            const toastEl = document.getElementById('mpToast');
+            if (!toastEl) return;
+            document.getElementById('mpToastText').innerText = message;
+            const iconEl = document.getElementById('mpToastIcon');
+            iconEl.className = 'bi fs-5 ' + iconClass;
+            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        };
+    </script>
+    
+</body>
+</html>
+
